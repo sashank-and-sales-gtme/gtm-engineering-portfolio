@@ -5,6 +5,28 @@ Rover lets a customer connect their CRM and team chat once, then runs GTM workfl
 1. **Connection service** (`backend/`, `frontend/`): a FastAPI app and React dashboard. The customer signs in, connects HubSpot, Salesforce, Zoho CRM, Slack or Microsoft Teams through OAuth, and Rover hands the resulting credentials to n8n through n8n's public API.
 2. **Allbound account research** (`workflows/`): an n8n workflow that fires when an account shows intent, checks it against the ICP, researches it, and puts the result in HubSpot and Slack using the credentials Rover created.
 
+## System design
+
+![Rover system design: intent sources feed data normalisation, ICP qualification, deep research, buying committee, contact verification and account journey analysis, which routes accounts to nurture campaigns or the sales-ready outreach list](docs/architecture.png)
+
+The design above is the full system. This repository implements the core path; the table shows where each stage lives and what is still to build.
+
+| Stage in the design | In this repository |
+|---|---|
+| First-party intent | Webhook trigger that accepts any intent provider posting a domain (MessageProperty alerts included) |
+| Marketing email responses, third-party intent | Not built yet |
+| Data normalisation | `Normalize Input` node |
+| ICP qualification | Claude fit check against the configured ICP, with cited evidence |
+| Deep research | Three Exa searches compiled by Claude |
+| Account journey analysis | Claude research compiler (runs before the buying committee step in this version) |
+| Find buying committee | Apollo people search |
+| Verify contact enrichment | Apollo enrichment, verified emails only (no separate verification service yet) |
+| Sales-ready: outreach list | HubSpot company, contacts and BOFU task, plus a Slack alert |
+| Sales-ready: sequences | Claude writes a three-email sequence and LinkedIn note per contact and saves it to HubSpot; enrollment in a sequencer is not automated yet |
+| Nurture campaigns | Not built yet; nurture-stage accounts end the run |
+
+## How the code fits together
+
 ```mermaid
 flowchart LR
   U[Customer] -->|signs in, clicks Connect| FE[Rover dashboard]

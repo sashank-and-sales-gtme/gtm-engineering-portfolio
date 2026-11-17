@@ -2,6 +2,14 @@
 
 Automation for a direct-mail campaign I designed for InteractAI. Each target prospect receives a caricature of themselves with a card carrying a personal QR code. Delivery, website behaviour, email engagement and calls then decide what happens next, for every prospect, for 13 days and beyond. The original brief is in [docs/campaign-brief.pdf](docs/campaign-brief.pdf); the setup guide is in [docs/setup.md](docs/setup.md).
 
+## Campaign flow
+
+![Caricature campaign flow from the brief: delivery tracking splits prospects into delivered with QR scanned, delivered without a scan, and rejected packages, each leading to email campaigns, journey scoring and calls that push for an office visit](docs/campaign-flow.png)
+
+The flow from the campaign brief. The two "Personalised Email Campaign (Manual)" steps are implemented as Claude-drafted emails that a person approves before Instantly sends them.
+
+## How the workflows implement it
+
 ```mermaid
 flowchart LR
   S[Caricature shipped] --> D{Delivered?}

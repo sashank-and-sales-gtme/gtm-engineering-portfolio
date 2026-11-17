@@ -1,6 +1,6 @@
 # Stage
 
-Stage is the SDR workspace I'm building at StageProspct: the pipeline before your CRM. SDR teams work from one place instead of ten tabs. Researched accounts arrive in a weekly roster, contacts get enriched, meetings get prep briefs, post-call emails get drafted, and a prospect is written to HubSpot only when it is ready for the CRM.
+Stage is an SDR workspace I designed and built: the pipeline before your CRM. SDR teams work from one place instead of ten tabs. Researched accounts arrive in a weekly roster, contacts get enriched, meetings get prep briefs, post-call emails get drafted, and a prospect is written to HubSpot only when it is ready for the CRM.
 
 This folder mirrors the product repository. The app lives in [roster/](roster/); its [README](roster/README.md) is the full deployment guide.
 
