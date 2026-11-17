@@ -95,7 +95,7 @@ Each project folder is self-contained: its README covers setup, credentials and 
 
 - LinkedIn: [linkedin.com/in/sashank-koundinya](https://www.linkedin.com/in/sashank-koundinya)
 - Email: [sashankandsales@gmail.com](mailto:sashankandsales@gmail.com)
-- Phone: [+91 63831 19368](tel:+916383119368)
+- Phone: +91 63831 19368
 
 ## Rights
 
