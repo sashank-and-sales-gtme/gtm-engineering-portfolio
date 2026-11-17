@@ -70,4 +70,5 @@ return { json: { prospect_id: $json.id, event_type: 'cooldown', event_key: `${$j
     w.link("Load Config", "Get Cooldown Due")
     w.chain("Get Cooldown Due", "Cooldown Row", "Start Cooldown", "Cooldown Event", "Log Cooldown", "Cooldown In HubSpot?")
     w.link("Cooldown In HubSpot?", "Cooldown: Create Note", 0)
+    w.setup_note("## Caricature 4: Intent Scorer\n\nBefore activating: run supabase/migration.sql and fill the campaign_config row.\n\nRuns daily at 7:07 (workflow timezone America/Los_Angeles). Scores and tiers come from the v_prospect_scores view.\n\nCreate HubSpot contact properties caricature_intent_score (number) and caricature_intent_tier (Hot, Warm, Cold, Ice).\n\nCredentials: Supabase API, HubSpot App Token, Slack API.\n\nFull guide: caricature-campaign/docs/setup.md in github.com/sashank-and-sales-gtme/gtm-engineering-portfolio")
     return w.dump(out)

@@ -148,4 +148,5 @@ return { json: { id: dr.prospect_id, last_nurture_at: new Date().toISOString() }
     w.link("Approved In HubSpot?", "Respond: Approved", 1)
     w.link("Nurture: Link Note", "Respond: Approved")
     w.chain("Rejected Rows", "Mark Draft Rejected", "Prospect Skip Row", "Pause Prospect Nurture", "Respond: Rejected")
+    w.setup_note("## Caricature 6: Nurture Drafts and Approvals\n\nBefore activating: run supabase/migration.sql and fill the campaign_config row.\n\nRuns daily at 9:13 and serves the approval links (webhook caricature-nurture-decision).\n\nNeeds n8n_base_url and instantly_campaign_nurture_1, _2, _3 in campaign_config. Each nurture campaign has one step: subject {{nurtureSubject}}, body {{nurtureBody}}.\n\nCredentials: Supabase API, Header Auth `Authorization: Bearer <Instantly key>`, Slack API, Anthropic API.\n\nFull guide: caricature-campaign/docs/setup.md in github.com/sashank-and-sales-gtme/gtm-engineering-portfolio")
     return w.dump(out)

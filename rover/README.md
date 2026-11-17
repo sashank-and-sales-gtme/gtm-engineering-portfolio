@@ -43,7 +43,7 @@ flowchart LR
 
 ## Allbound account research workflow
 
-`workflows/allbound_account_research.json` (50 nodes) runs per account:
+`workflows/allbound_account_research.json` (50 nodes plus a setup note) runs per account:
 
 1. Normalises the domain from the intent webhook and stops if the seller and ICP config is incomplete.
 2. Looks the company up in HubSpot to decide between the new-account and existing-account paths.
@@ -53,7 +53,7 @@ flowchart LR
 6. **New accounts:** Slack alert, HubSpot company, Apollo buying committee (no-credit people search, then enrichment), verified emails only, contacts associated to the company, a **Claude-written three-email sequence plus LinkedIn note** per contact saved as a HubSpot note.
 7. **Existing accounts:** refreshes the research properties and creates a BOFU task for the company owner unless one is already open.
 
-The workflow is generated from `workflows/generator/build_allbound.py`, which keeps the 50 nodes consistent and lets `validate.py` check wiring, node references, expression syntax and leftover secrets before export.
+The workflow is generated from `workflows/generator/build_allbound.py`, which keeps the nodes consistent and lets `validate.py` check wiring, node references, expression syntax and leftover secrets before export. It is also checked against n8n 2.48's own node definitions with [`tools/n8n-schema-check`](../tools/n8n-schema-check/).
 
 ## Run it
 
@@ -72,7 +72,14 @@ cp .env.example .env
 npm install && npm run dev  # http://localhost:3000
 ```
 
-Register `http://localhost:3000/oauth/callback` as the redirect URL in each provider's OAuth app. In n8n, import the workflow, fill the **Seller & ICP Config** node, and select the credentials Rover created (`rover:<user id>:<provider>`) plus Exa, Apollo, the intent provider and Anthropic.
+Register `http://localhost:3000/oauth/callback` as the redirect URL in each provider's OAuth app.
+
+**Workflow setup in n8n** (the same steps are in a note inside the workflow, so a downloaded JSON is self-explanatory):
+
+1. Import `workflows/allbound_account_research.json` and fill the **Seller & ICP Config** node. `seller_company`, `seller_offering`, `icp_definition` and `slack_channel_id` are required; the workflow stops with a clear error until they are set. `journey_api_url_template` is your intent provider's account-journey URL with `{domain}` where the domain goes.
+2. Select credentials: HubSpot OAuth2 and Slack API (Rover creates both, named `rover:<user id>:<provider>`), Header Auth `x-api-key` for Exa, Header Auth `X-Api-Key` for Apollo (a master key, required by the people search endpoint), Header Auth for the intent provider, and Anthropic for the three Claude model nodes.
+3. Create these HubSpot company properties: `allbound_journey_stage`, `allbound_in_market`, `allbound_first_intent_date` (date), `allbound_icp_tier`, `allbound_icp_match`, `allbound_research_notes` (multi-line text).
+4. Send a test account: `curl -X POST <webhook URL> -H 'Content-Type: application/json' -d '{"domain":"acme.com","company_name":"Acme"}'`.
 
 ## Version history
 

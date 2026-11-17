@@ -15,9 +15,9 @@
         0,
         0
       ],
-      "id": "5107a936-311a-479c-92de-240ce955eb48",
+      "id": "099a1d6b-9fba-46dc-a952-351b3f3481ef",
       "name": "Intake Webhook",
-      "webhookId": "3a02484a-62c5-4a7b-9c12-fe1b980ee23c"
+      "webhookId": "03c21121-c87f-475d-8783-8c28650e6997"
     },
     {
       "parameters": {
@@ -35,7 +35,7 @@
         220,
         0
       ],
-      "id": "6b8fdd37-03a7-43be-9296-42e7a12fc57f",
+      "id": "deaafe08-c492-468b-8e53-5ab6dcb8bf43",
       "name": "Load Config"
     },
     {
@@ -48,7 +48,7 @@
         440,
         0
       ],
-      "id": "e1891ba2-ebd7-4b64-bf02-133ac49be88c",
+      "id": "eff6ef92-5434-4417-b906-1f72eef75b93",
       "name": "Normalize Prospects"
     },
     {
@@ -68,7 +68,7 @@
         660,
         0
       ],
-      "id": "b0adf629-1b7e-44e6-984e-adc08fa724fb",
+      "id": "251ee980-19a5-4330-83eb-763f4f3ca41c",
       "name": "HubSpot: Upsert Contact"
     },
     {
@@ -82,7 +82,7 @@
         880,
         0
       ],
-      "id": "329d4ac2-3f0b-4867-be1f-bbc8cac16b80",
+      "id": "368f5bc4-0c05-4a65-a8a0-f4cd1f0bc02c",
       "name": "Prospect Row"
     },
     {
@@ -98,7 +98,7 @@
         1100,
         0
       ],
-      "id": "a36200d7-b2da-4cd5-afa7-c5c2db1c1269",
+      "id": "f17e8fb2-ae24-4578-8f90-10f339f03a3b",
       "name": "Create Prospect",
       "onError": "continueRegularOutput"
     },
@@ -113,7 +113,7 @@
           },
           "conditions": [
             {
-              "id": "0ac09912-4787-4035-b039-989d86210ef4",
+              "id": "311a8a88-826e-48b9-b1bb-696baed4055f",
               "leftValue": "={{ Boolean($json.id) }}",
               "rightValue": "",
               "operator": {
@@ -133,7 +133,7 @@
         1320,
         0
       ],
-      "id": "ffd86aac-b50b-45e0-9284-66da9e55e194",
+      "id": "eed3ec72-5311-410d-835b-dcee95865e21",
       "name": "Prospect Created?"
     },
     {
@@ -147,7 +147,7 @@
         1540,
         -100
       ],
-      "id": "0009e729-7606-45d9-848d-41cbabd0e52d",
+      "id": "1c5788d1-437f-4a10-9de5-26dbb27fd6f4",
       "name": "Build Links"
     },
     {
@@ -174,7 +174,7 @@
         1760,
         -100
       ],
-      "id": "c3bd2d17-2c7f-4c7a-a232-1222261688ef",
+      "id": "60b3ed5a-369b-4c34-a0b7-d20823d7753a",
       "name": "Save Links"
     },
     {
@@ -188,7 +188,7 @@
         1980,
         -100
       ],
-      "id": "ebeaeff5-b055-4455-9893-2731ad53c4da",
+      "id": "f6eeb2a6-9403-40da-a828-ede5fd6c45ed",
       "name": "Shipped Event"
     },
     {
@@ -204,7 +204,7 @@
         2200,
         -100
       ],
-      "id": "3236ba90-f8ca-4e1b-9993-80c8c92de1d2",
+      "id": "2478da59-2f47-48c8-a509-bd2c17ff1742",
       "name": "Log Shipped",
       "onError": "continueRegularOutput"
     },
@@ -225,7 +225,7 @@
         2420,
         -100
       ],
-      "id": "c6fa91d2-e6a5-4976-8769-581f11772b91",
+      "id": "f7d09571-185b-4837-97b8-31f62ee4a280",
       "name": "HubSpot: Save LP URL",
       "onError": "continueRegularOutput"
     },
@@ -240,7 +240,7 @@
           },
           "conditions": [
             {
-              "id": "34491870-d49c-4873-9766-24a46416ece9",
+              "id": "79dcb52d-3609-43dd-8579-39c323d64e76",
               "leftValue": "={{ $('Create Prospect').item.json.track === 'shipped' }}",
               "rightValue": "",
               "operator": {
@@ -260,7 +260,7 @@
         2640,
         -100
       ],
-      "id": "808efde4-34ad-4dfb-90e2-a64778980da4",
+      "id": "b342736a-3759-4a37-8aaa-37f4c3175fba",
       "name": "Trackable?"
     },
     {
@@ -280,7 +280,7 @@
         2860,
         -200
       ],
-      "id": "6dc2257c-b86c-4541-8ed0-a5e0b35a9ec7",
+      "id": "c3037c30-8834-4833-aa48-996b0e2d0b3e",
       "name": "Ship24: Create Tracker",
       "onError": "continueRegularOutput"
     },
@@ -295,7 +295,7 @@
         3080,
         -200
       ],
-      "id": "f6f6baec-de75-4a12-a50f-da3beecba737",
+      "id": "4b58526e-0ff2-4b47-8d36-ee7c86b6c78e",
       "name": "Tracker Row"
     },
     {
@@ -322,7 +322,7 @@
         3300,
         -200
       ],
-      "id": "facb7860-0ca6-4ea5-a19f-7877dc6c7e71",
+      "id": "2e2077fe-8037-4807-a352-4c0d3db1888b",
       "name": "Save Tracker"
     },
     {
@@ -335,7 +335,7 @@
         3540,
         0
       ],
-      "id": "1fc80828-8c0a-47b2-92a2-1d5ebc44d2bd",
+      "id": "c2ac225a-3de8-41a4-bb8e-f9b9eea6dc3a",
       "name": "Collect Results"
     },
     {
@@ -348,7 +348,7 @@
         3760,
         0
       ],
-      "id": "8d7c19df-6c4e-478c-ba13-6a859add8e1c",
+      "id": "86ad5b68-38bf-47d0-93eb-0086204d68a8",
       "name": "Intake Summary"
     },
     {
@@ -371,9 +371,9 @@
         3980,
         -100
       ],
-      "id": "dad50047-139b-49f1-9846-151910a7d4b2",
+      "id": "debdd338-177b-4e22-897e-f57db11b705b",
       "name": "Slack: Intake Summary",
-      "webhookId": "177bd962-b455-462c-8661-483b639d2a45"
+      "webhookId": "7b56c93c-7822-460b-a557-f3a587b67f5c"
     },
     {
       "parameters": {
@@ -387,8 +387,24 @@
         3980,
         100
       ],
-      "id": "d6a9891a-ee7b-414c-aac2-1e98e5506b79",
+      "id": "24475ce2-58db-4397-bd8b-f8177a403361",
       "name": "Respond"
+    },
+    {
+      "parameters": {
+        "content": "## Caricature 1: Prospect Intake\n\nBefore activating: run supabase/migration.sql and fill the campaign_config row.\n\nPOST prospects to this workflow's webhook (path caricature-intake):\n\n`{\"prospects\":[{\"email\":\"\",\"first_name\":\"\",\"last_name\":\"\",\"title\":\"\",\"company_name\":\"\",\"carrier\":\"fedex\",\"tracking_number\":\"\"}]}`\n\nReturns each prospect's tracked URL and a print-ready QR PNG.\n\nCredentials: Supabase API, HubSpot App Token, Header Auth `X-Intake-Secret` on the webhook, Header Auth `Authorization: Bearer <Ship24 key>`, Slack API.\n\nFull guide: caricature-campaign/docs/setup.md in github.com/sashank-and-sales-gtme/gtm-engineering-portfolio",
+        "height": 520,
+        "width": 400,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        -420
+      ],
+      "id": "06e341a3-685e-4b7b-8ac2-d85ae81738eb",
+      "name": "Setup"
     }
   ],
   "pinData": {},

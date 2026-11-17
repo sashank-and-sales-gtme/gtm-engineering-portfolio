@@ -35,6 +35,10 @@ class WF:
         for a, b in zip(names, names[1:]):
             self.link(a, b)
 
+    def setup_note(self, content, pos=(-420, -420), width=400, height=520):
+        return self.add("Setup", "n8n-nodes-base.stickyNote", 1,
+                        {"content": content, "height": height, "width": width, "color": 4}, list(pos))
+
     def dump(self, path):
         wf = {"name": self.name, "nodes": self.nodes, "pinData": {}, "connections": self.connections,
               "active": False, "settings": {"executionOrder": "v1", "timezone": self.timezone}, "tags": []}

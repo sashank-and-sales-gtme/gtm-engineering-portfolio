@@ -37,7 +37,7 @@ The workflows never call each other. They share state through Supabase: a `prosp
 - **Day counting is calendar-based** in the campaign's timezone, and only the latest due call is created, so a missed run never floods reps with stale tasks.
 - **First-party identity.** The QR URL carries a per-prospect token in `utm_content`. The website snippet stores it and reports only that prospect's sessions, through an image pixel, so it needs no CORS setup.
 - **AI drafts, humans send.** Nurture emails are written by Claude under tight rules (no tracking references, only approved proof points) and go out only after someone clicks a one-time approval link.
-- **Generated, not hand-wired.** The six workflows are built by `generator/` from Python, so 157 nodes stay consistent and `validate.py` checks wiring, node references and expression syntax on every build.
+- **Generated, not hand-wired.** The six workflows are built by `generator/` from Python, so their 157 nodes stay consistent and `validate.py` checks wiring, node references and expression syntax on every build. Each workflow also carries a setup note, and all six are checked against n8n 2.48's own node definitions with [`tools/n8n-schema-check`](../tools/n8n-schema-check/).
 
 ## Tests
 
@@ -49,6 +49,6 @@ The workflows never call each other. They share state through Supabase: a `prosp
 
 ```bash
 cd tests && npm install && npm test
-psql "$DATABASE_URL" -f ../supabase/migration.sql -f sql/views_test.sql
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f ../supabase/migration.sql -f sql/views_test.sql
 cd ../generator && python build_all.py /tmp/out && python validate.py /tmp/out/1_Caricature_Prospect_Intake.json
 ```

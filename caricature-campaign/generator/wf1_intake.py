@@ -114,4 +114,5 @@ return [{ json: { created, failed, tracker_errors: trackerErrors, created_count:
     w.link("Save Tracker", "Collect Results", 0, 0)
     w.chain("Collect Results", "Intake Summary", "Slack: Intake Summary")
     w.link("Intake Summary", "Respond")
+    w.setup_note("## Caricature 1: Prospect Intake\n\nBefore activating: run supabase/migration.sql and fill the campaign_config row.\n\nPOST prospects to this workflow's webhook (path caricature-intake):\n\n`{\"prospects\":[{\"email\":\"\",\"first_name\":\"\",\"last_name\":\"\",\"title\":\"\",\"company_name\":\"\",\"carrier\":\"fedex\",\"tracking_number\":\"\"}]}`\n\nReturns each prospect's tracked URL and a print-ready QR PNG.\n\nCredentials: Supabase API, HubSpot App Token, Header Auth `X-Intake-Secret` on the webhook, Header Auth `Authorization: Bearer <Ship24 key>`, Slack API.\n\nFull guide: caricature-campaign/docs/setup.md in github.com/sashank-and-sales-gtme/gtm-engineering-portfolio")
     return w.dump(out)

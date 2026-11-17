@@ -568,6 +568,8 @@ for model, root in [("Claude Model: Fit Check", "Claude Fit Check"),
                     ("Claude Model: Sequence Writer", "Claude Sequence Writer")]:
     link(model, root, kind="ai_languageModel")
 
+add("Setup", "n8n-nodes-base.stickyNote", 1, {"content": "## Rover: Allbound Account Research\n\nTrigger: POST to this workflow's webhook with `{\"domain\": \"acme.com\", \"company_name\": \"Acme\"}`. Intent alerts in the MessageProperty format also work.\n\n1. Fill the Seller & ICP Config node: seller_company, seller_offering, icp_definition and slack_channel_id are required. journey_api_url_template is your intent provider's account journey URL with {domain} as the placeholder.\n\n2. Credentials: HubSpot OAuth2 and Slack API (Rover creates both as rover:<user>:<provider>), Header Auth `x-api-key` for Exa, Header Auth `X-Api-Key` for Apollo (master key), Header Auth for the intent provider, Anthropic API for the three Claude models.\n\n3. HubSpot company properties to create: allbound_journey_stage, allbound_in_market, allbound_first_intent_date (date), allbound_icp_tier, allbound_icp_match, allbound_research_notes (multi-line text).\n\nFull guide: rover/README.md in github.com/sashank-and-sales-gtme/gtm-engineering-portfolio", "height": 560, "width": 420, "color": 4}, [-1700, -300])
+
 for node in nodes:
     if node.get("credentials") == {}:
         del node["credentials"]

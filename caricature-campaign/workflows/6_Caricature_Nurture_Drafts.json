@@ -18,7 +18,7 @@
         0,
         0
       ],
-      "id": "359a5481-65f2-4091-805c-a8d5aa516631",
+      "id": "16436a6a-110f-4b7f-950f-227bb130783c",
       "name": "Daily 9:13 PT"
     },
     {
@@ -37,7 +37,7 @@
         220,
         0
       ],
-      "id": "a4e4d71c-7246-490f-b44d-1be908bbea5f",
+      "id": "20630400-0b1d-43cf-984d-0cdebd1cb653",
       "name": "Load Config"
     },
     {
@@ -51,7 +51,7 @@
           },
           "conditions": [
             {
-              "id": "cdf3905e-780a-4d21-9a89-4b6f448b624a",
+              "id": "7366876f-76c3-4742-828e-d74bd0252dff",
               "leftValue": "={{ Boolean($('Load Config').first().json.n8n_base_url && $('Load Config').first().json.instantly_campaign_nurture_1 && $('Load Config').first().json.instantly_campaign_nurture_2 && $('Load Config').first().json.instantly_campaign_nurture_3) }}",
               "rightValue": "",
               "operator": {
@@ -71,7 +71,7 @@
         440,
         0
       ],
-      "id": "45aac8df-720a-485d-ba68-93c9d2485cb9",
+      "id": "750ebdf0-1869-4b62-80f1-0d82769a806b",
       "name": "Ready To Draft?"
     },
     {
@@ -84,7 +84,7 @@
         660,
         200
       ],
-      "id": "ca32ca17-1f29-4ae9-9554-c3e46c87e1dc",
+      "id": "4a26a539-4d11-4ecd-be7b-c706ce8e8534",
       "name": "Stop: Nurture Config Missing"
     },
     {
@@ -103,7 +103,7 @@
         660,
         0
       ],
-      "id": "c583f00a-1cfc-46c3-90d6-54921e3cc2f1",
+      "id": "c63d2a7f-496f-441e-95cd-ec89211cdd9e",
       "name": "Get Nurture Candidates"
     },
     {
@@ -121,7 +121,7 @@
         880,
         0
       ],
-      "id": "f208ef90-9eae-4d40-8909-c4f11bdb0da7",
+      "id": "972c938a-6f3b-40c1-89ab-50203aaf53a2",
       "name": "Claude Nurture Writer"
     },
     {
@@ -143,7 +143,7 @@
         880,
         220
       ],
-      "id": "b5e02d36-ddc1-4f6d-b05b-d1a34b9886ad",
+      "id": "5d29d823-5553-4d8a-a8e3-b0a7858fadfa",
       "name": "Claude Model: Claude Nurture Writer"
     },
     {
@@ -157,7 +157,7 @@
         1100,
         0
       ],
-      "id": "d1b1a8ac-42f7-4518-9d39-802be20ddf15",
+      "id": "d8703fc6-71fe-4ceb-94a9-00e01f405260",
       "name": "Draft Row"
     },
     {
@@ -173,7 +173,7 @@
         1320,
         0
       ],
-      "id": "8320ce82-8dc1-4204-bc11-a713f43f5dee",
+      "id": "0f3a9398-f304-4b6e-917e-8902a22bc58a",
       "name": "Save Draft",
       "onError": "continueRegularOutput"
     },
@@ -188,7 +188,7 @@
           },
           "conditions": [
             {
-              "id": "c90e85a7-3052-47d5-a1fb-a758e21aa2d0",
+              "id": "9a146f10-81e2-4344-93ee-67d3e1fa9ed8",
               "leftValue": "={{ Boolean($json.id) }}",
               "rightValue": "",
               "operator": {
@@ -208,7 +208,7 @@
         1540,
         0
       ],
-      "id": "0f74e352-2bdd-4882-ab7f-bbf95d9cb7f4",
+      "id": "8b7656d3-0b6d-4d02-8c7d-de1532e4cade",
       "name": "Draft Saved?"
     },
     {
@@ -222,7 +222,7 @@
         1760,
         -100
       ],
-      "id": "a307fe8d-08c8-42fa-b314-3e493a859928",
+      "id": "57ec364a-5c0c-4bec-9c4c-1d1f65bae2c8",
       "name": "Drafted Event"
     },
     {
@@ -238,7 +238,7 @@
         1980,
         -100
       ],
-      "id": "44304a5f-ac01-4675-9b2d-cd1c0400c284",
+      "id": "31318087-a2a1-4c24-95cd-73ab298dbf72",
       "name": "Log Drafted",
       "onError": "continueRegularOutput"
     },
@@ -262,9 +262,9 @@
         2200,
         -100
       ],
-      "id": "6e100847-b9f5-41cb-906a-2ddb46bea887",
+      "id": "aad7f5d2-7d71-4f3e-bc11-69c4387e7b87",
       "name": "Slack: Approve Draft",
-      "webhookId": "75871122-1b3e-4414-b897-1bc3cb7f4078"
+      "webhookId": "b63ef711-43f6-453f-a239-e28a34aafc2b"
     },
     {
       "parameters": {
@@ -279,9 +279,9 @@
         0,
         500
       ],
-      "id": "c02d3f38-3198-4edb-a2a3-0f8a62ea35f7",
+      "id": "2ef8856c-1096-4a42-97df-d3475351b58f",
       "name": "Decision Link",
-      "webhookId": "f885dc05-68bb-4ca5-9d13-9815805f57e2"
+      "webhookId": "35902de4-8b9a-4336-b485-7f95a1c11fef"
     },
     {
       "parameters": {
@@ -294,7 +294,7 @@
         220,
         500
       ],
-      "id": "a51ebf1f-2314-4ff7-9e59-d05a096984c2",
+      "id": "b72e2fa4-1124-456a-83e6-b1f5b4373f02",
       "name": "Read Decision"
     },
     {
@@ -312,7 +312,7 @@
         440,
         500
       ],
-      "id": "57c2882b-000c-47c7-b34a-93da8c515684",
+      "id": "6218fd09-f91e-4c6b-bd4a-5ed2190e2638",
       "name": "Find Draft",
       "alwaysOutputData": true
     },
@@ -327,7 +327,7 @@
           },
           "conditions": [
             {
-              "id": "d88cc29c-33e6-4de0-8afb-18f901f79819",
+              "id": "dd4d3e04-6042-48eb-823d-015d89dfdc30",
               "leftValue": "={{ Boolean($json.id) }}",
               "rightValue": "",
               "operator": {
@@ -347,7 +347,7 @@
         660,
         500
       ],
-      "id": "fb9dbd44-ffc5-41f3-ab13-e7d4a70be871",
+      "id": "bbe9ca56-f08a-4f0c-8b04-6c3e017d75f1",
       "name": "Draft Valid?"
     },
     {
@@ -371,7 +371,7 @@
         880,
         700
       ],
-      "id": "84c3e402-68c6-4f9a-bcf9-7cc9b3dd1cc7",
+      "id": "49647978-908e-46e1-95e5-95a92e5329b0",
       "name": "Respond: Invalid"
     },
     {
@@ -385,7 +385,7 @@
           },
           "conditions": [
             {
-              "id": "4e0a1343-cb82-474c-8183-deaa58765b4b",
+              "id": "199c22ed-5084-4e42-8c61-1a2db693d999",
               "leftValue": "={{ $('Read Decision').first().json.action === 'approve' }}",
               "rightValue": "",
               "operator": {
@@ -405,7 +405,7 @@
         880,
         400
       ],
-      "id": "01f3f2bb-8170-448f-a511-1af29c9ad825",
+      "id": "9726e373-4033-4550-8110-c68f68e49135",
       "name": "Approve?"
     },
     {
@@ -424,7 +424,7 @@
         1100,
         300
       ],
-      "id": "e4732bd5-717e-4916-a879-8f7ac83aa298",
+      "id": "ec49a22d-7b5b-4718-94f5-6fb531133af7",
       "name": "Config For Send"
     },
     {
@@ -442,7 +442,7 @@
         1320,
         300
       ],
-      "id": "1bf29683-4217-4a3a-83d5-1f58b05a08c3",
+      "id": "fcd19280-c34a-4100-8824-1047dd222093",
       "name": "Get Prospect"
     },
     {
@@ -462,7 +462,7 @@
         1540,
         300
       ],
-      "id": "05d51d5b-4080-43e5-86d0-48262975c129",
+      "id": "76ecb789-5e93-4e65-b426-bec288eac00b",
       "name": "Instantly: Add To Nurture"
     },
     {
@@ -475,7 +475,7 @@
         1980,
         300
       ],
-      "id": "687bb531-28fc-44ab-aacc-2106dc19e2d7",
+      "id": "45f02ee7-5f67-4fba-aa87-0f37e467d47e",
       "name": "Approved Draft Row"
     },
     {
@@ -502,7 +502,7 @@
         2200,
         300
       ],
-      "id": "dcd518c4-d3bc-4c22-8f83-67eb766f1da8",
+      "id": "b6e94b0b-6ecb-4b4a-98f4-1859a2dacd6a",
       "name": "Mark Draft Approved"
     },
     {
@@ -516,7 +516,7 @@
         2420,
         300
       ],
-      "id": "c3907b36-8df4-443c-959f-ab1cb192346f",
+      "id": "24807cdf-6f86-4ec1-bb75-a769e4b57fb5",
       "name": "Prospect Nurture Row"
     },
     {
@@ -543,7 +543,7 @@
         2640,
         300
       ],
-      "id": "35743f2c-b674-40e7-8c33-7afe3e6fbe2d",
+      "id": "c2043925-2831-495c-bf9b-24b60a11a3d5",
       "name": "Update Prospect Count"
     },
     {
@@ -557,7 +557,7 @@
         2860,
         300
       ],
-      "id": "d968b64a-87f3-4805-acad-8d47d8e1db87",
+      "id": "f69fea37-88df-4325-be38-6cf9bdd70089",
       "name": "Approved Event"
     },
     {
@@ -573,7 +573,7 @@
         3080,
         300
       ],
-      "id": "2a8d9b76-1337-4533-9b1f-355006ad6d46",
+      "id": "380c68fa-3a8c-4a29-88a3-b8bd76b906f7",
       "name": "Log Approved",
       "onError": "continueRegularOutput"
     },
@@ -588,7 +588,7 @@
           },
           "conditions": [
             {
-              "id": "6dc10a2c-58ba-4770-80fe-a47395809894",
+              "id": "ebcc35a3-dd0e-495c-ad39-21c5215ca8ed",
               "leftValue": "={{ Boolean($('Get Prospect').first().json.hubspot_contact_id) }}",
               "rightValue": "",
               "operator": {
@@ -608,7 +608,7 @@
         3300,
         300
       ],
-      "id": "7731f8dd-a25c-4bf5-915c-0e428729ab6c",
+      "id": "4add61d1-dcba-4121-b92a-27527abb2c88",
       "name": "Approved In HubSpot?"
     },
     {
@@ -628,7 +628,7 @@
         3520,
         300
       ],
-      "id": "01a6b900-521e-462d-a70b-efa398228bb7",
+      "id": "3ce2b12a-ce8b-42dc-ae7c-847861abd8c9",
       "name": "Nurture: Create Note",
       "onError": "continueRegularOutput"
     },
@@ -646,7 +646,7 @@
         3740,
         300
       ],
-      "id": "fb182493-7926-4c72-9e5c-a11d0e06c154",
+      "id": "0b3c544a-289a-492e-844d-98d939015abc",
       "name": "Nurture: Link Note",
       "onError": "continueRegularOutput"
     },
@@ -671,7 +671,7 @@
         3520,
         500
       ],
-      "id": "2cdf3402-1ff8-4a2e-9aca-5852ceb31a32",
+      "id": "353b74ba-6867-4529-9015-f6710abc2cc2",
       "name": "Respond: Approved"
     },
     {
@@ -685,7 +685,7 @@
         1100,
         550
       ],
-      "id": "41f156f6-414b-4f86-81f4-8804c823f754",
+      "id": "f80301b6-e854-4c78-93aa-66e6fea57f1c",
       "name": "Rejected Rows"
     },
     {
@@ -712,7 +712,7 @@
         1320,
         550
       ],
-      "id": "25f3c1ca-8ec3-4c3b-8d88-ef11b604c0a0",
+      "id": "7e7843f2-1698-41b0-b013-f753db975069",
       "name": "Mark Draft Rejected"
     },
     {
@@ -726,7 +726,7 @@
         1540,
         550
       ],
-      "id": "4c26ebda-41ae-4b7c-bd12-e3933ac38fac",
+      "id": "d654f700-2991-4c43-afb6-1212b1da8746",
       "name": "Prospect Skip Row"
     },
     {
@@ -753,7 +753,7 @@
         1760,
         550
       ],
-      "id": "732a93e9-ed3c-41ee-a9a1-065cdcfcac51",
+      "id": "914ba68b-88d2-431f-af37-0cababcadce9",
       "name": "Pause Prospect Nurture"
     },
     {
@@ -777,8 +777,24 @@
         1980,
         550
       ],
-      "id": "57476008-60c2-4016-8aed-dd52e8b8033a",
+      "id": "4f8e3ec0-be3e-4f0a-b71c-1d5a04a77a8f",
       "name": "Respond: Rejected"
+    },
+    {
+      "parameters": {
+        "content": "## Caricature 6: Nurture Drafts and Approvals\n\nBefore activating: run supabase/migration.sql and fill the campaign_config row.\n\nRuns daily at 9:13 and serves the approval links (webhook caricature-nurture-decision).\n\nNeeds n8n_base_url and instantly_campaign_nurture_1, _2, _3 in campaign_config. Each nurture campaign has one step: subject {{nurtureSubject}}, body {{nurtureBody}}.\n\nCredentials: Supabase API, Header Auth `Authorization: Bearer <Instantly key>`, Slack API, Anthropic API.\n\nFull guide: caricature-campaign/docs/setup.md in github.com/sashank-and-sales-gtme/gtm-engineering-portfolio",
+        "height": 520,
+        "width": 400,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        -420
+      ],
+      "id": "28ddac25-9155-443a-8352-de19d668c7a5",
+      "name": "Setup"
     }
   ],
   "pinData": {},

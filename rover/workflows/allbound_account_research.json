@@ -4,7 +4,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "991c4f2b-5b29-4207-a45d-73f047f221d8",
+        "path": "c68da2e1-925c-426e-8d55-d0a15f60a9bf",
         "options": {}
       },
       "type": "n8n-nodes-base.webhook",
@@ -13,9 +13,9 @@
         -1200,
         0
       ],
-      "id": "42739960-32e3-44e8-bfe0-de7ac89c378b",
+      "id": "a06d5123-4698-4baf-a0c3-86e6e1f6cffa",
       "name": "Webhook",
-      "webhookId": "991c4f2b-5b29-4207-a45d-73f047f221d8"
+      "webhookId": "c68da2e1-925c-426e-8d55-d0a15f60a9bf"
     },
     {
       "parameters": {
@@ -27,7 +27,7 @@
         -980,
         0
       ],
-      "id": "b1e0777b-e74e-44b8-ae94-3a977472ee2f",
+      "id": "3946ee74-4317-4ae8-953e-42ba60c825a6",
       "name": "Normalize Input"
     },
     {
@@ -35,67 +35,67 @@
         "assignments": {
           "assignments": [
             {
-              "id": "eac8696a-9b94-4930-a74b-ea8211f393b8",
+              "id": "a8e0a0e6-ca3f-4ce3-a119-8005fe7ee321",
               "name": "seller_company",
               "value": "",
               "type": "string"
             },
             {
-              "id": "4fbaa099-b111-4190-8faf-4f9e9892d74c",
+              "id": "4218d2e0-fde8-4294-809b-4e37b3243a9a",
               "name": "seller_offering",
               "value": "",
               "type": "string"
             },
             {
-              "id": "11637a27-c8bc-4fa2-a5c2-e304de7a7ff4",
+              "id": "995adb12-1076-4356-b5c7-c8c5773cf4b5",
               "name": "icp_definition",
               "value": "",
               "type": "string"
             },
             {
-              "id": "5c498a82-b56a-4a86-9387-db9b97b77f27",
+              "id": "2633c9d3-de55-4731-b64d-aad08ebb7f20",
               "name": "tier_definitions",
               "value": "",
               "type": "string"
             },
             {
-              "id": "583bea45-297c-4d55-a96c-903914c7b7e2",
+              "id": "7f4eb25a-9835-4f47-b5b6-f811621b25a6",
               "name": "fit_threshold",
               "value": 60,
               "type": "number"
             },
             {
-              "id": "ca1d4122-56cb-4e92-b109-a44da9de5baa",
+              "id": "296385eb-1c69-488b-b7a9-cdedfb934971",
               "name": "persona_titles",
               "value": "cmo, cro, vp sales, vp marketing, head of sales, head of marketing, demand generation, revops, chief of staff, founders office",
               "type": "string"
             },
             {
-              "id": "482c88ba-6a00-4170-9627-e24b6ba2d2bb",
+              "id": "7a570146-feb0-495b-8374-d66d74653730",
               "name": "persona_seniorities",
               "value": "c_suite, founder, vp, head, director",
               "type": "string"
             },
             {
-              "id": "c72eb928-8f4e-4838-a7f8-b38a4d027216",
+              "id": "0d30de22-af54-414a-82a0-378c9ecc6bdf",
               "name": "max_contacts",
               "value": 10,
               "type": "number"
             },
             {
-              "id": "d0e811c8-6d66-4132-bad3-f3a95f3463fe",
+              "id": "1ebaf65b-338e-4e24-98a7-c31e137fcac1",
               "name": "news_lookback_days",
               "value": 90,
               "type": "number"
             },
             {
-              "id": "da90b613-db09-46d2-a049-2b966775b935",
+              "id": "ed262d13-5583-4e9e-86fd-a6a7361f8670",
               "name": "journey_api_url_template",
               "value": "",
               "type": "string"
             },
             {
-              "id": "16e67748-3aae-4940-818c-27fbec068b89",
+              "id": "1ca76f53-8150-4f3f-b00f-579726073145",
               "name": "slack_channel_id",
               "value": "",
               "type": "string"
@@ -111,7 +111,7 @@
         -760,
         0
       ],
-      "id": "a9e24491-315d-40a7-a0ba-d673ff959a68",
+      "id": "223b4d38-f8fb-40ae-92ee-fede917472fe",
       "name": "Seller & ICP Config"
     },
     {
@@ -125,7 +125,7 @@
           },
           "conditions": [
             {
-              "id": "30f03eb4-ca05-4aa8-b2b8-4b023b63cffc",
+              "id": "067f86af-6f9d-4013-b709-2a20fc942222",
               "leftValue": "={{ Boolean($('Seller & ICP Config').first().json.icp_definition && $('Seller & ICP Config').first().json.seller_company && $('Seller & ICP Config').first().json.seller_offering && $('Seller & ICP Config').first().json.slack_channel_id) }}",
               "operator": {
                 "type": "boolean",
@@ -145,7 +145,7 @@
         -540,
         0
       ],
-      "id": "7c17274d-0391-4537-9028-98028f6eeb99",
+      "id": "abd1afb3-54db-4cac-a092-f7eccd652a1a",
       "name": "Config Complete?"
     },
     {
@@ -158,7 +158,7 @@
         -320,
         200
       ],
-      "id": "0a0c6388-77e6-43ec-91ac-eda4982a279a",
+      "id": "7bb63a84-8a6f-4ce9-b256-62727e4878e2",
       "name": "Stop: ICP Config Missing"
     },
     {
@@ -177,7 +177,7 @@
         -320,
         0
       ],
-      "id": "7dd39fe4-6a3f-4550-9f2b-5860da20abcc",
+      "id": "25ee64a6-8ff0-46ef-bc6a-75e2129cc58a",
       "name": "Search HubSpot by Domain",
       "alwaysOutputData": true
     },
@@ -186,13 +186,13 @@
         "assignments": {
           "assignments": [
             {
-              "id": "5a6eda3d-ba47-4826-bce3-ed5e78f286f8",
+              "id": "0ebe3ffe-2986-4737-a821-f49f06ed1b8b",
               "name": "hs_company_id",
               "value": "={{ $json.companyId ? String($json.companyId) : '' }}",
               "type": "string"
             },
             {
-              "id": "b2ef1fd1-af7d-4d2b-afb6-53b8e8e756f9",
+              "id": "308d127f-d630-46b2-9243-8fb602ed9328",
               "name": "is_new",
               "value": "={{ !$json.companyId }}",
               "type": "boolean"
@@ -207,7 +207,7 @@
         -100,
         0
       ],
-      "id": "49a1c48c-ce57-48f9-a62a-a7d1c3cf3634",
+      "id": "ae0f401a-621a-4041-9ee0-65003b3a5d4d",
       "name": "Account State"
     },
     {
@@ -227,7 +227,7 @@
         120,
         0
       ],
-      "id": "56cb18f4-e948-4130-9ee3-310d991c703d",
+      "id": "0f61fdd8-c174-44a8-829a-b1a099546342",
       "name": "Exa: Company Profile",
       "onError": "continueRegularOutput"
     },
@@ -248,7 +248,7 @@
         340,
         0
       ],
-      "id": "89ec00e5-6795-49ba-9ff8-29bac0cc2b2c",
+      "id": "245808c7-4ef4-4780-9f08-b0c7223e4a1d",
       "name": "Exa: Recent News",
       "onError": "continueRegularOutput"
     },
@@ -269,7 +269,7 @@
         560,
         0
       ],
-      "id": "a85cf4c3-144c-42a9-bfb8-bd1506436744",
+      "id": "46ea04b8-cf23-4c44-ab37-6fadb3cc0483",
       "name": "Exa: Company Website",
       "onError": "continueRegularOutput"
     },
@@ -283,7 +283,7 @@
         780,
         0
       ],
-      "id": "abaadeff-5897-4374-a2f5-ea0204a0b235",
+      "id": "5e5ad642-d8a0-412c-9112-bcbde84e1798",
       "name": "Build Research Bundle"
     },
     {
@@ -301,7 +301,7 @@
         1000,
         0
       ],
-      "id": "9d360f04-b767-423b-8389-27f7f250a55e",
+      "id": "f4e3f721-b25e-4bd0-afc8-d61447a8b6f9",
       "name": "Claude Fit Check"
     },
     {
@@ -323,7 +323,7 @@
         1000,
         220
       ],
-      "id": "25facaf6-e2e3-4f68-892f-f2f16032f200",
+      "id": "e3c4839f-48d0-4738-adc6-543bd865717a",
       "name": "Claude Model: Fit Check"
     },
     {
@@ -337,7 +337,7 @@
           },
           "conditions": [
             {
-              "id": "c6ada102-5f20-4789-b9be-35f3dda5f966",
+              "id": "da6c8cab-9af0-4212-ae1e-2dbdc1695017",
               "leftValue": "={{ $json.output.icp_match }}",
               "operator": {
                 "type": "string",
@@ -356,7 +356,7 @@
         1220,
         0
       ],
-      "id": "c725f0da-e9c9-4f1a-b541-9fb107035006",
+      "id": "ee73f6a7-b339-4e18-8faf-d9faacec60cc",
       "name": "ICP Match?"
     },
     {
@@ -367,7 +367,7 @@
         1440,
         200
       ],
-      "id": "9d74cf69-74a7-4f72-bbd7-2be82bf506fb",
+      "id": "034fa630-5742-481c-a36f-fba50f3822be",
       "name": "Not ICP: No Action"
     },
     {
@@ -384,7 +384,7 @@
         1440,
         0
       ],
-      "id": "183d917b-8b29-4f6c-a80f-f7ca5c236f52",
+      "id": "8ba9efb8-557d-4c69-a0d3-0fe234fbbbb7",
       "name": "Get Account Journey",
       "onError": "continueRegularOutput"
     },
@@ -400,7 +400,7 @@
         1660,
         0
       ],
-      "id": "c1ee7268-7de6-4743-addf-8cfcd05c071a",
+      "id": "2325abc6-2d94-4624-9441-10b9fc162459",
       "name": "Aggregate Journey"
     },
     {
@@ -418,7 +418,7 @@
         1880,
         0
       ],
-      "id": "8f4c3df4-e751-4429-bd77-e3132bbec1f4",
+      "id": "19edf78e-b837-4eb8-95f2-9260b72a9e70",
       "name": "Claude Research Compiler"
     },
     {
@@ -440,7 +440,7 @@
         1880,
         220
       ],
-      "id": "fe0d494f-cc5a-49a1-8d57-7146f52d12b8",
+      "id": "c5d274c7-f940-4036-b939-5c0700fa8488",
       "name": "Claude Model: Research Compiler"
     },
     {
@@ -454,7 +454,7 @@
           },
           "conditions": [
             {
-              "id": "1eea003a-a7cb-41d9-b997-eb90e5958175",
+              "id": "d317ee22-6b7f-4e30-94c3-0228c0aec444",
               "leftValue": "={{ $json.output.journey_stage }}",
               "operator": {
                 "type": "string",
@@ -473,7 +473,7 @@
         2100,
         0
       ],
-      "id": "e6beebe1-22b7-4816-8149-cc2fa574ca2e",
+      "id": "a4cba6a5-053b-4bc0-8503-b6d2b6d06e1a",
       "name": "Sales Ready?"
     },
     {
@@ -484,7 +484,7 @@
         2320,
         200
       ],
-      "id": "75c79a77-2cdf-442e-a527-ef1f9c0d3fc3",
+      "id": "f1b33f93-67a3-4556-9d55-b73efdfe8e05",
       "name": "Nurture: No Action"
     },
     {
@@ -498,7 +498,7 @@
           },
           "conditions": [
             {
-              "id": "637356ad-98ee-4076-b15c-50d8b3b97c67",
+              "id": "8442cf69-4308-4961-8861-3695207d702e",
               "leftValue": "={{ $('Account State').first().json.is_new }}",
               "operator": {
                 "type": "boolean",
@@ -518,7 +518,7 @@
         2320,
         0
       ],
-      "id": "baf1c8de-ea06-406c-8485-3241c57c7496",
+      "id": "35b79d71-004a-4ec6-b104-93d6606e3f54",
       "name": "New Account?"
     },
     {
@@ -541,9 +541,9 @@
         2540,
         -200
       ],
-      "id": "4acc1578-7e5b-4332-9466-9d6e633d2ff4",
+      "id": "61076f44-3a19-48cd-bdf8-cb5bbbe07095",
       "name": "Slack: Sales Ready Alert",
-      "webhookId": "a5f9352a-f13d-45a4-a197-7dda7d91d67c"
+      "webhookId": "ca4a2ea9-b3e9-4cd1-a85b-1614ff226e0a"
     },
     {
       "parameters": {
@@ -588,7 +588,7 @@
         2760,
         -200
       ],
-      "id": "b29ab04c-64ca-4ef8-a068-0ef4714f5640",
+      "id": "ac0208e3-07d4-4329-9432-742de8e087fd",
       "name": "Create Company in HubSpot"
     },
     {
@@ -601,7 +601,7 @@
         2980,
         -200
       ],
-      "id": "583d8497-5c56-408d-88fe-4df66f1ca032",
+      "id": "cb7bfc85-370b-4de5-bee2-ba49a5a4522e",
       "name": "Build Apollo Query"
     },
     {
@@ -618,7 +618,7 @@
         3200,
         -200
       ],
-      "id": "a2dbb095-0d02-443b-b980-d777c842d0ae",
+      "id": "6b604246-ddf6-49d9-93c5-32c733bca34c",
       "name": "Apollo: Find Buying Committee"
     },
     {
@@ -633,7 +633,7 @@
         3420,
         -200
       ],
-      "id": "882f4bf6-3d9d-4f0b-af1f-d86175303ffb",
+      "id": "e392d7d1-0142-4d37-b9cc-7c0853e2b486",
       "name": "Split Out People"
     },
     {
@@ -663,7 +663,7 @@
         3640,
         -200
       ],
-      "id": "e7e58eca-9a17-4932-afa5-72032902638e",
+      "id": "54db8495-0fdd-4993-8921-74b21e080856",
       "name": "Apollo: Enrich Person",
       "onError": "continueRegularOutput"
     },
@@ -678,7 +678,7 @@
           },
           "conditions": [
             {
-              "id": "8a1ffab1-12ec-42ab-9bad-5c08889944e7",
+              "id": "f338abb8-a484-4563-8988-21cab041b6f5",
               "leftValue": "={{ $json.person?.email_status ?? '' }}",
               "rightValue": "verified",
               "operator": {
@@ -687,7 +687,7 @@
               }
             },
             {
-              "id": "87be0524-ab0a-47d7-867f-cf00c0f51b36",
+              "id": "44a3a784-66e7-48f6-acb2-9170a4010335",
               "leftValue": "={{ $json.person?.email ?? '' }}",
               "rightValue": "",
               "operator": {
@@ -707,7 +707,7 @@
         3860,
         -200
       ],
-      "id": "b850c8c7-a957-419f-a4d6-0158e7b9db9e",
+      "id": "00fcc4b6-ae02-4b2d-b7ee-cf176b650d83",
       "name": "Verified Email?"
     },
     {
@@ -715,55 +715,55 @@
         "assignments": {
           "assignments": [
             {
-              "id": "07e59f89-7730-4f02-a902-dabe7af752e0",
+              "id": "8e049d61-a235-4eee-846e-b673d93a8d28",
               "name": "hs_contact_fname",
               "value": "={{ $json.person.first_name ?? '' }}",
               "type": "string"
             },
             {
-              "id": "96e4ea71-7690-4477-94f2-939057d84bb6",
+              "id": "b6152ef0-2e52-483c-8625-48726cf18dd4",
               "name": "hs_contact_lname",
               "value": "={{ $json.person.last_name ?? '' }}",
               "type": "string"
             },
             {
-              "id": "e2ed7a21-d533-403a-8b0d-6c5bdbb13916",
+              "id": "5984480b-044d-451f-8a2c-ed91629e8c08",
               "name": "hs_contact_email",
               "value": "={{ $json.person.email ?? '' }}",
               "type": "string"
             },
             {
-              "id": "2efe8d30-228b-46c6-a97f-88071367335c",
+              "id": "7150e4a3-8cea-4075-813e-af5476248bdc",
               "name": "hs_contact_title",
               "value": "={{ $json.person.title ?? '' }}",
               "type": "string"
             },
             {
-              "id": "28114325-1c4e-4f2b-94ce-de3b4a5ff040",
+              "id": "9e68563c-4524-4178-9083-2bf9c6f82220",
               "name": "hs_contact_company_name",
               "value": "={{ $json.person.organization?.name ?? $('Normalize Input').first().json.company_name }}",
               "type": "string"
             },
             {
-              "id": "419ba9de-46fc-4249-b0eb-dc2dfd002a82",
+              "id": "5f2c2bec-193b-4158-bd3c-98efa8eda7ac",
               "name": "hs_contact_city",
               "value": "={{ $json.person.city ?? '' }}",
               "type": "string"
             },
             {
-              "id": "212417f5-3147-473a-86c0-54d9815a73f5",
+              "id": "2009b368-b061-4bca-bae8-8583acb72acc",
               "name": "hs_contact_country",
               "value": "={{ $json.person.country ?? '' }}",
               "type": "string"
             },
             {
-              "id": "ae830146-e226-4685-a280-7e55de1527b5",
+              "id": "e0bdccd9-cfee-4113-aa67-4d5984bbb195",
               "name": "hs_contact_linkedin",
               "value": "={{ $json.person.linkedin_url ?? '' }}",
               "type": "string"
             },
             {
-              "id": "8c60e5e9-128d-4892-9d83-8a22d2bd6556",
+              "id": "1bb2c342-bdf2-451a-bb99-b8c418a0d4f4",
               "name": "hs_contact_headline",
               "value": "={{ $json.person.headline ?? '' }}",
               "type": "string"
@@ -778,7 +778,7 @@
         4080,
         -200
       ],
-      "id": "2f28631f-61c4-48e4-b699-83976376077f",
+      "id": "6bd04be0-2483-4056-9db5-dc4531b8d260",
       "name": "Contact Fields"
     },
     {
@@ -801,7 +801,7 @@
         4300,
         -200
       ],
-      "id": "f18a8985-244e-49ba-885e-ebb54ec2faf6",
+      "id": "f07bd929-16b1-444b-a9b2-0ca3265e7194",
       "name": "Upsert Contact in HubSpot"
     },
     {
@@ -818,7 +818,7 @@
         4520,
         -200
       ],
-      "id": "868d840a-8f94-4050-88f8-68ee22b733b9",
+      "id": "bd0f0bc5-0cd4-45fa-a9a2-9c242ce4abf9",
       "name": "Associate Contact to Company",
       "onError": "continueRegularOutput"
     },
@@ -837,7 +837,7 @@
         4740,
         -200
       ],
-      "id": "2c4a1144-d333-49ad-ba05-9a5cf9447a3c",
+      "id": "cd17124a-a22e-4579-98a0-e832fb3e6e61",
       "name": "Claude Sequence Writer"
     },
     {
@@ -859,7 +859,7 @@
         4740,
         20
       ],
-      "id": "d8d84866-3ec6-4b19-8a6c-42eb40ea397b",
+      "id": "fae9aa35-5d14-4f47-9e85-0f67fed1bf44",
       "name": "Claude Model: Sequence Writer"
     },
     {
@@ -879,7 +879,7 @@
         4960,
         -200
       ],
-      "id": "a013eb3e-b1cd-447b-879e-0152a8741c46",
+      "id": "fce58f4d-4125-4fa2-851e-8d334da7c725",
       "name": "Log Sequence as HubSpot Note",
       "onError": "continueRegularOutput"
     },
@@ -897,7 +897,7 @@
         5180,
         -200
       ],
-      "id": "6354aeb1-0b87-4138-9798-30c8f5e10483",
+      "id": "7aa1dadb-650d-4b52-96d0-ce7e23194ea0",
       "name": "Associate Note to Contact",
       "onError": "continueRegularOutput"
     },
@@ -921,9 +921,9 @@
         5400,
         -200
       ],
-      "id": "243a32a4-f13f-40f0-b617-2fd6570fba80",
+      "id": "967a5bef-ba1b-45fd-baf9-aabbed054a3d",
       "name": "Slack: Contact and Sequence",
-      "webhookId": "56c80318-1a52-4dd8-b1f1-cd2d9461ccd6"
+      "webhookId": "e873dd1c-f422-4a86-8724-1f1572adf32f"
     },
     {
       "parameters": {
@@ -948,7 +948,7 @@
         2540,
         200
       ],
-      "id": "5bdb88ee-43dc-4d1c-bb40-2c173da754c0",
+      "id": "9d0e1f1e-4e37-430e-9e9e-d7b7e3b1673a",
       "name": "Get Company Owner",
       "onError": "continueRegularOutput"
     },
@@ -969,7 +969,7 @@
         2760,
         200
       ],
-      "id": "de3e16fe-2645-4fb3-b97f-9e3e2d2b057a",
+      "id": "a0a9582a-049b-4ac9-96d6-162ac52ae0e3",
       "name": "Update Company Research",
       "onError": "continueRegularOutput"
     },
@@ -996,7 +996,7 @@
         2980,
         200
       ],
-      "id": "4f91fcae-ff2e-45d7-acca-923d87cf7d79",
+      "id": "e48cefea-b1d5-4c10-ad09-67873319cd44",
       "name": "Get Company Tasks"
     },
     {
@@ -1009,7 +1009,7 @@
         3200,
         200
       ],
-      "id": "524e6496-bdef-48fb-a308-626133a2fa1e",
+      "id": "e4d77b65-dbf1-43b0-a7f2-a20977c1d707",
       "name": "Collect Task IDs"
     },
     {
@@ -1023,7 +1023,7 @@
           },
           "conditions": [
             {
-              "id": "901f4201-24dd-4ddf-b582-2ed067e539b5",
+              "id": "78c482eb-3390-403d-9664-272b71120059",
               "leftValue": "={{ $json.has_tasks }}",
               "operator": {
                 "type": "boolean",
@@ -1043,7 +1043,7 @@
         3420,
         200
       ],
-      "id": "0a5099de-3ba7-47fa-b5ba-5c12c325d4e9",
+      "id": "483d716f-56cf-444e-80f7-eb2bb4d89c5c",
       "name": "Has Tasks?"
     },
     {
@@ -1063,7 +1063,7 @@
         3640,
         100
       ],
-      "id": "65ae2ce5-c203-4551-ab67-4456513b60e3",
+      "id": "e19726e9-adba-4924-8fa8-bf7474137bf7",
       "name": "Read Tasks"
     },
     {
@@ -1076,7 +1076,7 @@
         3860,
         200
       ],
-      "id": "49bc99e7-597a-45ed-b347-4da0056c3885",
+      "id": "7149290f-fe5e-4430-9409-834fed28c3a1",
       "name": "Evaluate BOFU Tasks"
     },
     {
@@ -1090,7 +1090,7 @@
           },
           "conditions": [
             {
-              "id": "d718fd68-c4bb-4db5-8248-fc83777b895b",
+              "id": "3b86ee4b-aa30-4dc7-bb11-c7a3c2243cf3",
               "leftValue": "={{ $json.has_active_bofu }}",
               "operator": {
                 "type": "boolean",
@@ -1110,7 +1110,7 @@
         4080,
         200
       ],
-      "id": "098afb6b-a4ee-4802-8129-d3cc12287d7e",
+      "id": "d9dd79fb-62d2-45cb-9b0c-43e2ad32faf5",
       "name": "No Active BOFU Task?"
     },
     {
@@ -1121,7 +1121,7 @@
         4300,
         400
       ],
-      "id": "cb3edc79-0213-4636-8ffa-ebd98343a3bb",
+      "id": "6dd07a95-f7e9-4419-bfcd-94fc61ac1ca6",
       "name": "Active BOFU Exists: No Action"
     },
     {
@@ -1141,7 +1141,7 @@
         4300,
         200
       ],
-      "id": "c5213626-83fc-45a9-ac61-0be381dd0dad",
+      "id": "56a1c144-d0b8-4879-b459-e312745d224e",
       "name": "Create BOFU Task"
     },
     {
@@ -1158,7 +1158,7 @@
         4520,
         200
       ],
-      "id": "a1c91493-bcb3-4c7d-abdc-ad6a4a945d06",
+      "id": "abf1f53d-86ae-4469-95f4-342cc4d74d0c",
       "name": "Associate Task to Company",
       "onError": "continueRegularOutput"
     },
@@ -1176,7 +1176,7 @@
         4740,
         200
       ],
-      "id": "df0750c8-c373-4c9d-918c-8d62d375aa71",
+      "id": "b3137679-b87a-4086-9717-9533e5ce1dab",
       "name": "Get Owner Name",
       "onError": "continueRegularOutput"
     },
@@ -1200,9 +1200,25 @@
         4960,
         200
       ],
-      "id": "b3d56f47-31d0-4837-9ccc-1add466ae634",
+      "id": "da98c0c4-90db-41c8-8ab7-bbf818d41d8a",
       "name": "Slack: BOFU Task Created",
-      "webhookId": "a38a6654-5482-4fa4-9a0e-918ffaef6c24"
+      "webhookId": "e546fce9-3423-45b7-b33d-4b6897d2e20d"
+    },
+    {
+      "parameters": {
+        "content": "## Rover: Allbound Account Research\n\nTrigger: POST to this workflow's webhook with `{\"domain\": \"acme.com\", \"company_name\": \"Acme\"}`. Intent alerts in the MessageProperty format also work.\n\n1. Fill the Seller & ICP Config node: seller_company, seller_offering, icp_definition and slack_channel_id are required. journey_api_url_template is your intent provider's account journey URL with {domain} as the placeholder.\n\n2. Credentials: HubSpot OAuth2 and Slack API (Rover creates both as rover:<user>:<provider>), Header Auth `x-api-key` for Exa, Header Auth `X-Api-Key` for Apollo (master key), Header Auth for the intent provider, Anthropic API for the three Claude models.\n\n3. HubSpot company properties to create: allbound_journey_stage, allbound_in_market, allbound_first_intent_date (date), allbound_icp_tier, allbound_icp_match, allbound_research_notes (multi-line text).\n\nFull guide: rover/README.md in github.com/sashank-and-sales-gtme/gtm-engineering-portfolio",
+        "height": 560,
+        "width": 420,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1700,
+        -300
+      ],
+      "id": "de065a20-d8c5-4a4c-bebc-241196eb86a4",
+      "name": "Setup"
     }
   ],
   "pinData": {},

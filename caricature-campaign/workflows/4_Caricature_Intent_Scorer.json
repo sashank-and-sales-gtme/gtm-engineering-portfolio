@@ -18,7 +18,7 @@
         0,
         0
       ],
-      "id": "c6f5840e-0295-4e2f-bf76-d04c1d453c5b",
+      "id": "d08a3cf9-7273-4b52-ae14-3b5752d48df9",
       "name": "Daily 7:07 PT"
     },
     {
@@ -37,7 +37,7 @@
         220,
         0
       ],
-      "id": "cc5e7e0c-a5bd-43f4-8569-f98345c38ac5",
+      "id": "01c6cba3-d4e8-4b08-8ee1-e7aa88e3e682",
       "name": "Load Config"
     },
     {
@@ -56,7 +56,7 @@
         440,
         -150
       ],
-      "id": "6cdb2478-0762-4027-b5ad-13e46dea3895",
+      "id": "120556b5-28e7-42be-a0c6-c65a1ff5440a",
       "name": "Get Scores"
     },
     {
@@ -69,7 +69,7 @@
         660,
         -150
       ],
-      "id": "4512760b-cbf2-4ffc-b072-0eb224dc56aa",
+      "id": "dea60e6a-79a0-465d-a1df-c4b6910bbc92",
       "name": "Plan Score Updates"
     },
     {
@@ -83,7 +83,7 @@
         880,
         -300
       ],
-      "id": "49b41547-b13d-42f5-99ec-dfb0f111a388",
+      "id": "d4ef3712-546f-4102-84a3-b8135e73bbcd",
       "name": "Score Row"
     },
     {
@@ -110,7 +110,7 @@
         1100,
         -300
       ],
-      "id": "69ef6a9a-59bf-4230-bd07-31d7309b02b3",
+      "id": "b9e7b5ae-8d11-46b4-bd12-a25677cb51b8",
       "name": "Save Score"
     },
     {
@@ -124,7 +124,7 @@
           },
           "conditions": [
             {
-              "id": "7645df48-c5cf-4278-a2dc-384cc732da87",
+              "id": "7fe480aa-3e48-4653-9450-9eba96e5ec3f",
               "leftValue": "={{ Boolean($json.hubspot_contact_id) }}",
               "rightValue": "",
               "operator": {
@@ -144,7 +144,7 @@
         880,
         -150
       ],
-      "id": "a153beb3-cd83-4c69-a978-f3aa7d7db510",
+      "id": "4affdf6e-d4ca-4b67-a2ea-43807e8e5005",
       "name": "In HubSpot?"
     },
     {
@@ -164,7 +164,7 @@
         1100,
         -150
       ],
-      "id": "c94c788a-dac5-4011-9b36-9035d87fcbf3",
+      "id": "a5445729-b729-4345-8ec8-dbfe380d6423",
       "name": "HubSpot: Score Properties",
       "onError": "continueRegularOutput"
     },
@@ -179,7 +179,7 @@
           },
           "conditions": [
             {
-              "id": "1fde760b-d3e4-45b6-bf25-aa982bf7127b",
+              "id": "0623f49f-10e4-457f-890e-03ec6786f6df",
               "leftValue": "={{ $json.newly_sales_ready }}",
               "rightValue": "",
               "operator": {
@@ -199,7 +199,7 @@
         880,
         0
       ],
-      "id": "09ab9878-4d0a-4443-8b40-08195dfa14ea",
+      "id": "6d4560af-dcaa-4710-a987-d0e41218254d",
       "name": "Newly Sales Ready?"
     },
     {
@@ -213,7 +213,7 @@
         1100,
         0
       ],
-      "id": "8cec3f9c-c725-4632-8249-ef9d9fdaef9b",
+      "id": "77d17671-87f2-42cb-b6a7-1c87724a69fd",
       "name": "Sales Ready Row"
     },
     {
@@ -240,7 +240,7 @@
         1320,
         0
       ],
-      "id": "b573921d-c56a-4b17-b03b-50131ed76441",
+      "id": "17d4fd31-cbd2-4c69-9d0f-b53bba859d7f",
       "name": "Mark Sales Ready"
     },
     {
@@ -254,7 +254,7 @@
         1540,
         0
       ],
-      "id": "a09894e2-0607-441b-b105-c738a3ca3664",
+      "id": "960e5fc6-d6f6-4fda-8286-face9df8df39",
       "name": "Sales Ready Event"
     },
     {
@@ -270,7 +270,7 @@
         1760,
         0
       ],
-      "id": "08831575-1b18-4260-b69c-b0c44884103c",
+      "id": "b980a4a6-b96f-46eb-bf95-590559311b97",
       "name": "Log Sales Ready",
       "onError": "continueRegularOutput"
     },
@@ -291,7 +291,7 @@
         1980,
         0
       ],
-      "id": "a28a0310-3e58-49b8-9707-05a9e4cce762",
+      "id": "042c08b8-2286-4a00-9c0e-30f3b477f70b",
       "name": "Sales Ready: Create Task",
       "onError": "continueRegularOutput"
     },
@@ -309,7 +309,7 @@
         2200,
         0
       ],
-      "id": "1a45cfcb-9aa7-4b67-a821-3641d07ac65c",
+      "id": "375b04a0-ddf7-4faf-b03f-d5b271054e94",
       "name": "Sales Ready: Link Task",
       "onError": "continueRegularOutput"
     },
@@ -333,9 +333,9 @@
         2420,
         0
       ],
-      "id": "cee38a8d-144f-4da6-b170-3b54c7707d67",
+      "id": "62cc00d9-d69c-4ddf-9ddc-d7d5eabc2df7",
       "name": "Slack: Sales Ready",
-      "webhookId": "607e4e25-de85-4239-bc1c-cc0e3bd283a9"
+      "webhookId": "9488b6bd-434d-4383-a826-700e51a31361"
     },
     {
       "parameters": {
@@ -353,7 +353,7 @@
         440,
         250
       ],
-      "id": "bad31279-2410-40c7-a101-f01a8c551314",
+      "id": "6d57bafa-7e65-4c77-8887-901fda19cc5f",
       "name": "Get Cooldown Due"
     },
     {
@@ -367,7 +367,7 @@
         660,
         250
       ],
-      "id": "706c0d80-690b-4b8b-a023-065fba2876c2",
+      "id": "9b1f92a0-7928-435e-95ab-a6211c4f3fc3",
       "name": "Cooldown Row"
     },
     {
@@ -394,7 +394,7 @@
         880,
         250
       ],
-      "id": "f4225d1a-b9d8-444a-8548-a35242e0e6e0",
+      "id": "ee856a98-264a-47cb-9bc3-be3ca513adb6",
       "name": "Start Cooldown"
     },
     {
@@ -408,7 +408,7 @@
         1100,
         250
       ],
-      "id": "f8a2bbb3-0b67-4387-9b83-3e3db484f9b6",
+      "id": "add74890-db2c-4bda-9961-e89e11eb2e53",
       "name": "Cooldown Event"
     },
     {
@@ -424,7 +424,7 @@
         1320,
         250
       ],
-      "id": "ea510cea-8949-4119-9dc1-5ac4e969ec20",
+      "id": "12694078-eb19-439f-98bf-3e5843f8db1e",
       "name": "Log Cooldown",
       "onError": "continueRegularOutput"
     },
@@ -439,7 +439,7 @@
           },
           "conditions": [
             {
-              "id": "ebe48f59-c403-43b2-9247-5188e1dfd49f",
+              "id": "3d278148-ad3b-45c1-bc66-cc59601e583f",
               "leftValue": "={{ Boolean($('Get Cooldown Due').item.json.hubspot_contact_id) }}",
               "rightValue": "",
               "operator": {
@@ -459,7 +459,7 @@
         1540,
         250
       ],
-      "id": "ad3f58c9-2867-4109-a674-a5f925998e77",
+      "id": "8e503828-0c4d-46a7-9460-bff5c7ae3a26",
       "name": "Cooldown In HubSpot?"
     },
     {
@@ -479,7 +479,7 @@
         1760,
         250
       ],
-      "id": "f1376298-024d-45e8-97ad-9e1c0228ba01",
+      "id": "3a8a5599-8881-412f-ae03-ca7855210852",
       "name": "Cooldown: Create Note",
       "onError": "continueRegularOutput"
     },
@@ -497,9 +497,25 @@
         1980,
         250
       ],
-      "id": "8dc8e2ec-c696-4d49-a960-4990a7ee62d5",
+      "id": "d46cb877-dd21-4e99-9935-857b197b8753",
       "name": "Cooldown: Link Note",
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "content": "## Caricature 4: Intent Scorer\n\nBefore activating: run supabase/migration.sql and fill the campaign_config row.\n\nRuns daily at 7:07 (workflow timezone America/Los_Angeles). Scores and tiers come from the v_prospect_scores view.\n\nCreate HubSpot contact properties caricature_intent_score (number) and caricature_intent_tier (Hot, Warm, Cold, Ice).\n\nCredentials: Supabase API, HubSpot App Token, Slack API.\n\nFull guide: caricature-campaign/docs/setup.md in github.com/sashank-and-sales-gtme/gtm-engineering-portfolio",
+        "height": 520,
+        "width": 400,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        -420
+      ],
+      "id": "001a9305-5baf-4fc6-8de6-45b2ef7c766a",
+      "name": "Setup"
     }
   ],
   "pinData": {},

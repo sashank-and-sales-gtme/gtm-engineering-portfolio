@@ -29,8 +29,9 @@ for src, kinds in wf["connections"].items():
 
 triggers = {"n8n-nodes-base.webhook", "n8n-nodes-base.scheduleTrigger", "n8n-nodes-base.formTrigger"}
 models = {"@n8n/n8n-nodes-langchain.lmChatAnthropic"}
+notes = {"n8n-nodes-base.stickyNote"}
 for n in wf["nodes"]:
-    if n["type"] in triggers:
+    if n["type"] in triggers or n["type"] in notes:
         continue
     if n["type"] in models:
         if n["name"] not in wf["connections"]:
@@ -55,7 +56,7 @@ for ref in set(re.findall(r"\$\('([^']+)'\)", raw)):
         problems.append(f"expression references missing node: {ref}")
 
 # secret scan
-for pat, label in [(r"Bearer [A-Za-z0-9_-]{20,}", "bearer token"), (r"X-Api-Key", "inline api key header"),
+for pat, label in [(r"Bearer [A-Za-z0-9_-]{20,}", "bearer token"), (r"\"name\": \"X-Api-Key\"", "inline api key header"),
                    (r"sk-ant-[A-Za-z0-9_-]{10,}", "anthropic key"), (r"xox[bpa]-[0-9]", "slack token"),
                    (r"eyJhbGciOi[A-Za-z0-9_-]{20,}", "inline JWT"), (r"file:///", "local file path"),
                    (r"gemini-1\.5", "retired model"), (r"journey_stage\[0\]", "character-index bug")]:

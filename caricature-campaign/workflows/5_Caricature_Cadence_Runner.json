@@ -18,7 +18,7 @@
         0,
         0
       ],
-      "id": "a114c9a9-bc09-4d97-88eb-7a9a3884e8d6",
+      "id": "84e58bd5-f533-4d2a-8635-6628bf5f50e1",
       "name": "Every Hour"
     },
     {
@@ -37,7 +37,7 @@
         220,
         0
       ],
-      "id": "0a0c9e8b-703f-4fca-a487-e08cb691312f",
+      "id": "688116d4-edf5-4fbd-9756-0b3b8d6020e7",
       "name": "Load Config"
     },
     {
@@ -51,7 +51,7 @@
           },
           "conditions": [
             {
-              "id": "7da490bb-3042-4f36-9841-b2a835978d40",
+              "id": "f9ae7312-6554-4630-a82e-44dd48673f3c",
               "leftValue": "={{ Boolean($('Load Config').first().json.instantly_campaign_delivered && $('Load Config').first().json.instantly_campaign_not_delivered) }}",
               "rightValue": "",
               "operator": {
@@ -71,7 +71,7 @@
         440,
         0
       ],
-      "id": "3945f49e-c4dd-4d3e-be6d-0dc367b7adfa",
+      "id": "88af271a-7b43-413c-bd13-173eeb3cd2ea",
       "name": "Campaigns Configured?"
     },
     {
@@ -84,7 +84,7 @@
         660,
         200
       ],
-      "id": "5045f24a-e6ba-4c9e-a0b5-57b84c91028b",
+      "id": "26ca1936-09dd-4278-bbdc-d2b4615feaca",
       "name": "Stop: Missing Campaign IDs"
     },
     {
@@ -103,7 +103,7 @@
         660,
         -150
       ],
-      "id": "f3616842-2c13-4bd9-b66c-18c53a053a14",
+      "id": "9264ee2d-4da3-48c7-b0f1-a427e5b09182",
       "name": "Get Due Enrollments"
     },
     {
@@ -123,7 +123,7 @@
         880,
         -150
       ],
-      "id": "517518d7-1305-42f5-a47f-d65e3d776801",
+      "id": "58c1c725-d8a6-4af8-964f-03785478edef",
       "name": "Instantly: Add Lead",
       "onError": "continueRegularOutput"
     },
@@ -138,7 +138,7 @@
         1100,
         -150
       ],
-      "id": "ed491c49-97f0-4469-bb33-5aaf6e6c503d",
+      "id": "ea59a1b4-a60e-4502-8211-4e7e84167cc5",
       "name": "Enrollment Row"
     },
     {
@@ -152,7 +152,7 @@
           },
           "conditions": [
             {
-              "id": "ecf7ec98-b901-44d3-bae4-8ce6afad21fb",
+              "id": "df2fc965-acdc-457b-82e2-0d0679a2de53",
               "leftValue": "={{ !$json.failed }}",
               "rightValue": "",
               "operator": {
@@ -172,7 +172,7 @@
         1320,
         -150
       ],
-      "id": "8cd0a4f8-33f4-47e0-9639-353ed083ec3b",
+      "id": "242ffa51-0b61-4662-9aac-db8ad24325d6",
       "name": "Enrolled?"
     },
     {
@@ -199,7 +199,7 @@
         1540,
         -250
       ],
-      "id": "11dfe406-fe68-4ba2-adb9-8c7ff8a27e4c",
+      "id": "7acad128-4c6e-4958-8b0f-22dcdf64b3ca",
       "name": "Save Enrollment"
     },
     {
@@ -213,7 +213,7 @@
         1760,
         -250
       ],
-      "id": "3c0dc71b-bd51-4ff8-b05d-6717eb23340e",
+      "id": "9f0854f5-8ba6-484d-a116-7acf5142a709",
       "name": "Enrolled Event"
     },
     {
@@ -229,7 +229,7 @@
         1980,
         -250
       ],
-      "id": "da85b6a5-2999-47e0-9d62-ff1dcdbd4ff3",
+      "id": "33720b82-bff8-4828-91e3-0a416643ef26",
       "name": "Log Enrolled",
       "onError": "continueRegularOutput"
     },
@@ -244,7 +244,7 @@
           },
           "conditions": [
             {
-              "id": "29023d98-4b34-43c9-a62f-90c106f292a0",
+              "id": "b54b579a-fcab-4954-8a76-da6d83a31b6f",
               "leftValue": "={{ Boolean($('Get Due Enrollments').item.json.hubspot_contact_id) }}",
               "rightValue": "",
               "operator": {
@@ -264,7 +264,7 @@
         2200,
         -250
       ],
-      "id": "82b27367-0e04-4dba-8529-30dc02c50a0f",
+      "id": "83371174-b685-4ddf-92fd-b2084c92754c",
       "name": "Enrolled In HubSpot?"
     },
     {
@@ -284,7 +284,7 @@
         2420,
         -250
       ],
-      "id": "99d91eaf-f51d-48d3-a63c-661452777793",
+      "id": "6dae88de-667b-4384-91ae-0dd0aea2620a",
       "name": "Enrolled: Create Note",
       "onError": "continueRegularOutput"
     },
@@ -302,7 +302,7 @@
         2640,
         -250
       ],
-      "id": "5a5b34e5-1ed7-4abf-b6c1-9d05c392b07e",
+      "id": "0f6e16d0-ce76-4d52-a510-5221bc047351",
       "name": "Enrolled: Link Note",
       "onError": "continueRegularOutput"
     },
@@ -326,9 +326,9 @@
         1540,
         -50
       ],
-      "id": "46009880-35ef-4f87-ae64-d4b6d19f8d2d",
+      "id": "dad60adf-c06f-495b-8527-d61170413551",
       "name": "Slack: Enrollment Failed",
-      "webhookId": "e603472f-a53a-453e-8131-80cbc4674afe"
+      "webhookId": "3d811bc6-524f-4de4-a642-a6eacfc52379"
     },
     {
       "parameters": {
@@ -346,7 +346,7 @@
         660,
         150
       ],
-      "id": "4e95ebb9-e3eb-4966-9113-716c1685b3cc",
+      "id": "adb3c5e3-cabc-472c-92b0-1e1f1b6241bd",
       "name": "Get Due Calls"
     },
     {
@@ -360,7 +360,7 @@
         880,
         150
       ],
-      "id": "f04b7b90-f78f-407c-a52d-32a7f9f26e2e",
+      "id": "ecb3fcd9-e0e1-4646-b4bd-cfa4b2dda511",
       "name": "Build Call Task"
     },
     {
@@ -374,7 +374,7 @@
           },
           "conditions": [
             {
-              "id": "f0a30640-9f15-4d68-ad0a-0a3013692ef0",
+              "id": "cf9d3265-bae0-464a-9472-b80c41e63f39",
               "leftValue": "={{ Boolean($json.hubspot_contact_id) }}",
               "rightValue": "",
               "operator": {
@@ -394,7 +394,7 @@
         1100,
         150
       ],
-      "id": "8ea86a50-4dd1-4c50-87a8-a7251267e21a",
+      "id": "0070623e-ab48-4bf3-a988-b018b856d104",
       "name": "Call In HubSpot?"
     },
     {
@@ -414,7 +414,7 @@
         1320,
         150
       ],
-      "id": "0aac624e-6c30-4aa1-b85b-74a8aad74e33",
+      "id": "d96f0b16-0abc-4496-8147-a1b69cfb95d7",
       "name": "Cadence: Create Task",
       "onError": "continueRegularOutput"
     },
@@ -432,7 +432,7 @@
         1540,
         150
       ],
-      "id": "23c4b5a5-38f9-4fa2-b4c0-482e7bcc5244",
+      "id": "6bd191b7-a2be-4816-af4f-89b83a9fed96",
       "name": "Cadence: Link Task",
       "onError": "continueRegularOutput"
     },
@@ -447,7 +447,7 @@
         1760,
         150
       ],
-      "id": "c17cda40-5c98-41d0-9456-0812c504c39d",
+      "id": "c9c6686b-8733-4a69-aa92-609b88ba3204",
       "name": "Call Row"
     },
     {
@@ -474,7 +474,7 @@
         1980,
         150
       ],
-      "id": "2661dda7-b720-4a6d-b48e-5f4a7f7f9d35",
+      "id": "0e1624d5-fbfa-43ac-a488-8216292f6e88",
       "name": "Save Call Day"
     },
     {
@@ -488,7 +488,7 @@
         2200,
         150
       ],
-      "id": "e0b1ea27-c596-45f8-9a24-5abbfb4ae2bb",
+      "id": "a6d5bb4a-c084-4e1c-9982-59be98ab4ece",
       "name": "Call Event"
     },
     {
@@ -504,7 +504,7 @@
         2420,
         150
       ],
-      "id": "146ab7b0-8723-4f89-a6fe-414af7e97429",
+      "id": "2397cffa-83f7-45b8-9387-6306bbfcc0f9",
       "name": "Log Call Task",
       "onError": "continueRegularOutput"
     },
@@ -528,9 +528,25 @@
         1320,
         350
       ],
-      "id": "355b1af3-6a0d-4cbe-b6cc-16da1bce3947",
+      "id": "68fab103-e5c0-482d-9d93-44bfc4cebaba",
       "name": "Slack: Missing HubSpot ID",
-      "webhookId": "a03376a8-cd48-482d-a615-7ce5099602b6"
+      "webhookId": "d7360ee5-9a29-47c3-803a-487c987c85bb"
+    },
+    {
+      "parameters": {
+        "content": "## Caricature 5: Cadence Runner\n\nBefore activating: run supabase/migration.sql and fill the campaign_config row.\n\nRuns hourly. Needs instantly_campaign_delivered and instantly_campaign_not_delivered in campaign_config; the email copy for both campaigns is in docs/setup.md.\n\nCredentials: Supabase API, HubSpot App Token, Header Auth `Authorization: Bearer <Instantly key>`, Slack API.\n\nFull guide: caricature-campaign/docs/setup.md in github.com/sashank-and-sales-gtme/gtm-engineering-portfolio",
+        "height": 520,
+        "width": 400,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        -420
+      ],
+      "id": "3e2cf07a-a6a5-4beb-9373-9555c22e14f3",
+      "name": "Setup"
     }
   ],
   "pinData": {},

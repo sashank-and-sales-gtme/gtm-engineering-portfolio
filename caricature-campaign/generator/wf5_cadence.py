@@ -94,4 +94,5 @@ return { json: { prospect_id: b.id, event_type: 'call_task_created', event_key: 
     w.link("Call In HubSpot?", "Cadence: Create Task", 0)
     w.link("Call In HubSpot?", "Slack: Missing HubSpot ID", 1)
     w.chain("Cadence: Link Task", "Call Row", "Save Call Day", "Call Event", "Log Call Task")
+    w.setup_note("## Caricature 5: Cadence Runner\n\nBefore activating: run supabase/migration.sql and fill the campaign_config row.\n\nRuns hourly. Needs instantly_campaign_delivered and instantly_campaign_not_delivered in campaign_config; the email copy for both campaigns is in docs/setup.md.\n\nCredentials: Supabase API, HubSpot App Token, Header Auth `Authorization: Bearer <Instantly key>`, Slack API.\n\nFull guide: caricature-campaign/docs/setup.md in github.com/sashank-and-sales-gtme/gtm-engineering-portfolio")
     return w.dump(out)

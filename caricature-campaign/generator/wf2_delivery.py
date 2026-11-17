@@ -132,4 +132,5 @@ return { json: { prospect_id: $json.id, event_type: 'delivery_update', occurred_
     w.chain("Stage Row", "Update Stage", "Stage Event", "Log Stage Event", "HubSpot: Stage Properties", first)
     w.link(last, "Slack: Stage Change")
     w.chain("Update Event", "Log Delivery Update")
+    w.setup_note("## Caricature 2: Delivery Tracker\n\nBefore activating: run supabase/migration.sql and fill the campaign_config row.\n\nSet the Ship24 dashboard webhook URL to this workflow's Ship24 Webhook production URL.\n\nCouriers without tracking: open the form at /form/caricature-delivery-confirm.\n\nCredentials: Supabase API, HubSpot App Token, Slack API, Header Auth `Authorization: Bearer <Ship24 webhook secret>` on the webhook.\n\nFull guide: caricature-campaign/docs/setup.md in github.com/sashank-and-sales-gtme/gtm-engineering-portfolio")
     return w.dump(out)

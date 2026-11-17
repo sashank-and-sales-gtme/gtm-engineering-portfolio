@@ -14,9 +14,9 @@
         0,
         -100
       ],
-      "id": "66443fed-11ef-499b-8b21-1c797bad52e4",
+      "id": "68ea9995-9b24-4788-8e02-24ad8b8af2f7",
       "name": "Ship24 Webhook",
-      "webhookId": "21902d8b-37ea-4298-b066-de72518aa487"
+      "webhookId": "f82151de-9cd5-460e-9126-890de7d9001f"
     },
     {
       "parameters": {
@@ -56,7 +56,7 @@
         0,
         100
       ],
-      "id": "c1efd5aa-2356-4739-a5f3-a2e5a76f5e9a",
+      "id": "faa64a0a-9f23-4fa6-8db8-c43fded8f748",
       "name": "Manual Delivery Form",
       "webhookId": "caricature-delivery-confirm"
     },
@@ -70,7 +70,7 @@
         220,
         -100
       ],
-      "id": "8edbf478-aa68-42b8-b41b-7f5ebc213fde",
+      "id": "5f366eb9-3dd8-4043-a15f-1ae4bf37d34a",
       "name": "Parse Ship24"
     },
     {
@@ -84,7 +84,7 @@
         220,
         100
       ],
-      "id": "38b043f3-deda-41a5-8a9c-a35d9ef5c70f",
+      "id": "def077c7-551a-49a4-8cd4-2017938a6887",
       "name": "Parse Form"
     },
     {
@@ -95,7 +95,7 @@
         440,
         0
       ],
-      "id": "ddabb52b-aa38-481e-81e2-3f1da69c46f3",
+      "id": "ef7b6abf-230e-4582-95d1-2d7d26fd35c5",
       "name": "Delivery Signal"
     },
     {
@@ -114,7 +114,7 @@
         660,
         0
       ],
-      "id": "ba8b2452-cdca-4140-b51e-a855856d041e",
+      "id": "02c627bd-e548-4b44-bdd5-fcf2e1933ae0",
       "name": "Load Config"
     },
     {
@@ -132,7 +132,7 @@
         880,
         0
       ],
-      "id": "e49613b9-ac53-45c3-a2a2-17d3656baeb3",
+      "id": "7098f553-895d-4db5-8187-73ef31da571d",
       "name": "Find Prospect",
       "alwaysOutputData": true
     },
@@ -147,7 +147,7 @@
         1100,
         0
       ],
-      "id": "35534de1-53c2-4ba6-a716-cc515028271f",
+      "id": "9f0beb9a-9ac9-48c8-a0ec-2d9be685b362",
       "name": "Decide Transition"
     },
     {
@@ -162,7 +162,7 @@
         1320,
         0
       ],
-      "id": "f051e612-ca3c-4625-9a94-107e6c15ee08",
+      "id": "1d2c6c8d-8385-464c-83a2-aeff7a3198a5",
       "name": "Route"
     },
     {
@@ -176,7 +176,7 @@
         1540,
         -200
       ],
-      "id": "0455b15c-27d4-4983-8306-e7aeb3a546b2",
+      "id": "b05c661d-bc0b-4c02-a5b3-7a39e0c0a7b6",
       "name": "Stage Row"
     },
     {
@@ -203,7 +203,7 @@
         1760,
         -200
       ],
-      "id": "635de61e-43a0-40de-9ac4-09d664e47ba7",
+      "id": "75c38528-148b-488c-8a14-b8e376d2f3a1",
       "name": "Update Stage"
     },
     {
@@ -217,7 +217,7 @@
         1980,
         -200
       ],
-      "id": "766af303-3288-42a1-8954-b5590a14f37c",
+      "id": "d2b2e0d4-8cc2-4228-b608-6298d0882c75",
       "name": "Stage Event"
     },
     {
@@ -233,7 +233,7 @@
         2200,
         -200
       ],
-      "id": "58054471-20a5-498a-8ae4-dcf45fc8c745",
+      "id": "757139e9-ebf5-422e-bc37-14fe41683861",
       "name": "Log Stage Event",
       "onError": "continueRegularOutput"
     },
@@ -254,7 +254,7 @@
         2420,
         -200
       ],
-      "id": "fbd666a2-a754-49f2-9bce-21c14d9be4ba",
+      "id": "c8c485a0-2e19-43c9-a5c4-fa303dbed30d",
       "name": "HubSpot: Stage Properties",
       "onError": "continueRegularOutput"
     },
@@ -275,7 +275,7 @@
         2640,
         -200
       ],
-      "id": "4fd1bf51-b0f5-4618-9e5d-852c30dcb098",
+      "id": "742d11af-32d2-4edf-a7f8-af08dddb7c29",
       "name": "Stage: Create Note",
       "onError": "continueRegularOutput"
     },
@@ -293,7 +293,7 @@
         2860,
         -200
       ],
-      "id": "0a2cdc84-ef5c-44c3-89d1-badec5a28f89",
+      "id": "712108a1-f6ba-460a-b07d-3dca1d303ea1",
       "name": "Stage: Link Note",
       "onError": "continueRegularOutput"
     },
@@ -317,9 +317,9 @@
         3080,
         -200
       ],
-      "id": "1082e558-83ae-4fd3-8cc2-ff7d4cabc109",
+      "id": "044b13a0-c7e1-4766-9e17-d2e622cdb101",
       "name": "Slack: Stage Change",
-      "webhookId": "cad25120-d07a-4b99-9df7-2b6a0e09a084"
+      "webhookId": "e97f861c-4392-41fa-a182-385909c97e1c"
     },
     {
       "parameters": {
@@ -332,7 +332,7 @@
         1540,
         0
       ],
-      "id": "fc9ec1d6-9c80-4753-9fb0-894e58f2fa26",
+      "id": "d541f831-f743-45c6-8fc8-28bd703a7a41",
       "name": "Update Event"
     },
     {
@@ -348,7 +348,7 @@
         1760,
         0
       ],
-      "id": "7cf1297d-0893-435e-a6c2-37eef03438a4",
+      "id": "117194e8-069a-45b2-a93a-94a0a2033149",
       "name": "Log Delivery Update",
       "onError": "continueRegularOutput"
     },
@@ -372,9 +372,9 @@
         1540,
         200
       ],
-      "id": "781ae306-e665-413c-af0c-31a2cf4d6b18",
+      "id": "d67f91f9-8582-4821-becb-abe5b9044d09",
       "name": "Slack: Unmatched Update",
-      "webhookId": "b1a1b0e9-5a2d-40e4-bded-0fa4785da7c9"
+      "webhookId": "e18b1c2a-5a4f-4548-b349-728ccc3c2e8c"
     },
     {
       "parameters": {},
@@ -384,8 +384,24 @@
         1540,
         400
       ],
-      "id": "18d6796c-6437-4bd6-aca2-984d8cf0c395",
+      "id": "e93347b3-bcb7-4d15-b046-8fb56e6679fb",
       "name": "Already Past Delivery"
+    },
+    {
+      "parameters": {
+        "content": "## Caricature 2: Delivery Tracker\n\nBefore activating: run supabase/migration.sql and fill the campaign_config row.\n\nSet the Ship24 dashboard webhook URL to this workflow's Ship24 Webhook production URL.\n\nCouriers without tracking: open the form at /form/caricature-delivery-confirm.\n\nCredentials: Supabase API, HubSpot App Token, Slack API, Header Auth `Authorization: Bearer <Ship24 webhook secret>` on the webhook.\n\nFull guide: caricature-campaign/docs/setup.md in github.com/sashank-and-sales-gtme/gtm-engineering-portfolio",
+        "height": 520,
+        "width": 400,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        -420
+      ],
+      "id": "4b3c65eb-15b9-4ef6-b024-ec3ce4b6cbdb",
+      "name": "Setup"
     }
   ],
   "pinData": {},

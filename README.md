@@ -13,7 +13,7 @@ Sashank Koundinya. Three systems I designed and built to move B2B teams from a t
 - **Systems over scripts.** Each project keeps state in one place (Postgres or the CRM) and treats every external tool as replaceable through configuration.
 - **Data you can audit.** Every research claim carries a source ID, every intent signal lands in an event log, and every CRM write is logged against the record it touched.
 - **Cost and safety controls.** Fit checks run before expensive research, enrichment keys are bring-your-own per workspace, OAuth tokens are encrypted at rest, and AI-written outreach waits for human approval.
-- **Tested before shipped.** Rover's API has a pytest suite with mocked provider and n8n calls. The caricature campaign's scoring logic is asserted in SQL against Postgres, and its workflow logic is executed against mock payloads. Stage runs Deno, database and worker tests in CI.
+- **Tested before shipped.** Rover's API has a pytest suite with mocked provider and n8n calls. The caricature campaign's scoring logic is asserted in SQL against Postgres, and its workflow logic is executed against mock payloads. Every n8n workflow is validated against n8n 2.48's own node definitions. Stage runs Deno, database and worker tests in CI.
 
 ## Repository layout
 
@@ -29,6 +29,8 @@ caricature-campaign/
   generator/          Python generator for the six workflows
   tests/              Workflow, snippet and SQL view tests
   docs/               Campaign brief and setup guide
+tools/
+  n8n-schema-check/   Validates workflow JSON against a real n8n release's node definitions
 stage/
   roster/             The Stage app: React frontend, Supabase backend, research worker
   .claude/            Claude Code agents and the research worker skill
@@ -44,11 +46,17 @@ cd rover/backend && pip install -r requirements-dev.txt && pytest
 # Caricature campaign workflows and website snippet
 cd caricature-campaign/tests && npm install && npm test
 
-# Caricature campaign scoring views (needs a scratch Postgres database)
-psql "$DATABASE_URL" -f caricature-campaign/supabase/migration.sql -f caricature-campaign/tests/sql/views_test.sql
+# Caricature campaign scoring views (use an empty scratch Postgres database: the test inserts sample data)
+psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f caricature-campaign/supabase/migration.sql -f caricature-campaign/tests/sql/views_test.sql
+
+# Every n8n workflow against n8n 2.48's node definitions
+cd tools/n8n-schema-check && ./setup.sh && node check.js ../../rover/workflows/*.json ../../caricature-campaign/workflows/*.json
+
+# Stage app build and worker tests
+cd stage/roster && npm ci && npm run build && cd worker && npm ci && npm test
 ```
 
-Stage's own tests are described in [stage/README.md](stage/README.md).
+Each project folder is self-contained: its README covers setup, credentials and how to run it, and each n8n workflow carries a setup note so a single downloaded JSON file explains itself.
 
 ## Rights
 

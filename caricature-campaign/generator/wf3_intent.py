@@ -207,4 +207,5 @@ return { json: {
     w.link("Has Note?", "Intent: Create Note", 0)
     w.link("Has Slack?", "Slack: Intent Alert", 0)
     w.link("Needs Call Task?", "Intent: Create Task", 0)
+    w.setup_note("## Caricature 3: Intent Ingestor\n\nBefore activating: run supabase/migration.sql and fill the campaign_config row.\n\nWebhooks: ia-track (website snippet, GET, no auth), caricature-instantly (Instantly webhook, all events), caricature-factors (account visits), caricature-maya (optional).\n\nAdd website/tracking-snippet.html to the site with ENDPOINT set to the ia-track production URL.\n\nCredentials: Supabase API, HubSpot App Token, Header Auth `Authorization: Bearer <Instantly key>`, Slack API, Header Auth secrets for the Instantly, Factors and Maya webhooks.\n\nFull guide: caricature-campaign/docs/setup.md in github.com/sashank-and-sales-gtme/gtm-engineering-portfolio")
     return w.dump(out)
