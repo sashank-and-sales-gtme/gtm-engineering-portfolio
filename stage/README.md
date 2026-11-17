@@ -6,6 +6,10 @@ This folder mirrors the product repository. The app lives in [roster/](roster/);
 
 ## Architecture
 
+![Stage functional architecture](docs/architecture.png)
+
+Accounts clear the CRM gate before any AI spend, the Claude worker researches and screens them, the rep approves and enriches contacts, and only the call note goes to HubSpot. The table below maps the layers.
+
 | Layer | What it uses |
 |---|---|
 | Frontend | Vite, React 18, TypeScript, deployed on Vercel. Tabs for Accounts, Meetings, Dashboard, Task Center and Admin, live through Supabase Realtime. |

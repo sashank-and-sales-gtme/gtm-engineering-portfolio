@@ -18,6 +18,10 @@ I'm Sashank Koundinya, a GTM engineer with 5+ years across SDR, AE, CSM, marketi
 
 ![Caricature campaign flow](caricature-campaign/docs/campaign-flow.png)
 
+**Stage**
+
+![Stage functional architecture](stage/docs/architecture.png)
+
 Each project's README maps its diagram to the code.
 
 ## Experience behind these projects
