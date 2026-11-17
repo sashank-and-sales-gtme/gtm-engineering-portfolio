@@ -91,6 +91,12 @@ cd stage/roster && npm ci && npm run build && cd worker && npm ci && npm test
 
 Each project folder is self-contained: its README covers setup, credentials and how to run it, and each n8n workflow carries a setup note so a single downloaded JSON file explains itself.
 
+## Contact
+
+- LinkedIn: [linkedin.com/in/sashank-koundinya](https://www.linkedin.com/in/sashank-koundinya)
+- Email: [sashankandsales@gmail.com](mailto:sashankandsales@gmail.com)
+- Phone: [+91 63831 19368](tel:+916383119368)
+
 ## Rights
 
 Published for review as part of my portfolio. All rights reserved; no license is granted to copy, modify or redistribute this code.
