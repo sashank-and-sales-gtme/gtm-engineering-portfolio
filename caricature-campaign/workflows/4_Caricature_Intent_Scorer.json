@@ -1,0 +1,749 @@
+{
+  "name": "Caricature 4 - Intent Scorer",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7,
+              "triggerAtMinute": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c6f5840e-0295-4e2f-bf76-d04c1d453c5b",
+      "name": "Daily 7:07 PT"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "campaign_config",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "cc5e7e0c-a5bd-43f4-8569-f98345c38ac5",
+      "name": "Load Config"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "v_prospect_scores",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        440,
+        -150
+      ],
+      "id": "6cdb2478-0762-4027-b5ad-13e46dea3895",
+      "name": "Get Scores"
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date().toISOString();\nreturn $input.all().map(({ json: s }) => ({ json: {\n  row: { id: s.id, intent_score: s.score, intent_tier: s.tier, score_updated_at: now },\n  hubspot_contact_id: s.hubspot_contact_id || '',\n  score: s.score, tier: s.tier, previous_tier: s.previous_tier,\n  newly_sales_ready: ['Hot', 'Warm'].includes(s.tier) && !s.sales_ready_at,\n  first_name: s.first_name, last_name: s.last_name || '', company_name: s.company_name, email: s.email,\n  signals: [s.qr_visit && 'QR landing', s.demo && 'demo engaged', s.lp_to_contact && 'QR session to contact page',\n            s.visits_14d >= 3 && `${s.visits_14d} visits in 14 days`, s.visited && 'website visit'].filter(Boolean),\n} }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -150
+      ],
+      "id": "4512760b-cbf2-4ffc-b072-0eb224dc56aa",
+      "name": "Plan Score Updates"
+    },
+    {
+      "parameters": {
+        "jsCode": "return { json: $json.row };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        -300
+      ],
+      "id": "49b41547-b13d-42f5-99ec-dfb0f111a388",
+      "name": "Score Row"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "prospects",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        -300
+      ],
+      "id": "69ef6a9a-59bf-4230-bd07-31d7309b02b3",
+      "name": "Save Score"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7645df48-c5cf-4278-a2dc-384cc732da87",
+              "leftValue": "={{ Boolean($json.hubspot_contact_id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        -150
+      ],
+      "id": "a153beb3-cd83-4c69-a978-f3aa7d7db510",
+      "name": "In HubSpot?"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.hubapi.com/crm/v3/objects/contacts/{{ $json.hubspot_contact_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { caricature_intent_score: String($json.score), caricature_intent_tier: $json.tier } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        -150
+      ],
+      "id": "c94c788a-dac5-4011-9b36-9035d87fcbf3",
+      "name": "HubSpot: Score Properties",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1fde760b-d3e4-45b6-bf25-aa982bf7127b",
+              "leftValue": "={{ $json.newly_sales_ready }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        0
+      ],
+      "id": "09ab9878-4d0a-4443-8b40-08195dfa14ea",
+      "name": "Newly Sales Ready?"
+    },
+    {
+      "parameters": {
+        "jsCode": "return { json: { id: $json.row.id, sales_ready_at: new Date().toISOString() } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "8cec3f9c-c725-4632-8249-ef9d9fdaef9b",
+      "name": "Sales Ready Row"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "prospects",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        0
+      ],
+      "id": "b573921d-c56a-4b17-b03b-50131ed76441",
+      "name": "Mark Sales Ready"
+    },
+    {
+      "parameters": {
+        "jsCode": "const s = $('Newly Sales Ready?').item.json;\nreturn { json: { prospect_id: s.row.id, event_type: 'sales_ready', event_key: `${s.row.id}:sales_ready:${new Date().toISOString().slice(0, 10)}`,\n  source: 'scorer', payload: { score: s.score, tier: s.tier } } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        0
+      ],
+      "id": "a09894e2-0607-441b-b105-c738a3ca3664",
+      "name": "Sales Ready Event"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "create",
+        "tableId": "events",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        0
+      ],
+      "id": "08831575-1b18-4260-b69c-b0c44884103c",
+      "name": "Log Sales Ready",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/tasks",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: Object.assign({ hs_timestamp: $now.plus({ hours: 2 }).toUTC().toISO(), hs_task_subject: `Sales ready (${$('Newly Sales Ready?').item.json.tier}, ${$('Newly Sales Ready?').item.json.score}/100): call ${$('Newly Sales Ready?').item.json.first_name} at ${$('Newly Sales Ready?').item.json.company_name}`, hs_task_body: `Signals in the last 30 days: ${$('Newly Sales Ready?').item.json.signals.join(', ')}. Cold call and push for an office visit or ${$('Load Config').first().json.meet_location}. Use the caricature as the opener.`, hs_task_status: 'NOT_STARTED', hs_task_priority: 'HIGH', hs_task_type: 'CALL' }, $('Load Config').first().json.hubspot_owner_id ? { hubspot_owner_id: $('Load Config').first().json.hubspot_owner_id } : {}) }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1980,
+        0
+      ],
+      "id": "a28a0310-3e58-49b8-9707-05a9e4cce762",
+      "name": "Sales Ready: Create Task",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.hubapi.com/crm/v4/objects/tasks/{{ $json.id }}/associations/default/contacts/{{ $('Newly Sales Ready?').item.json.hubspot_contact_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2200,
+        0
+      ],
+      "id": "1a45cfcb-9aa7-4b67-a821-3641d07ac65c",
+      "name": "Sales Ready: Link Task",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Load Config').first().json.slack_channel_id }}"
+        },
+        "text": "={{ `🔥 Sales ready: ${[$('Newly Sales Ready?').item.json.first_name, $('Newly Sales Ready?').item.json.last_name].filter(Boolean).join(' ')} at ${$('Newly Sales Ready?').item.json.company_name} is ${$('Newly Sales Ready?').item.json.tier} (${$('Newly Sales Ready?').item.json.score}/100). Signals: ${$('Newly Sales Ready?').item.json.signals.join(', ')}. Call task created in HubSpot.` }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        2420,
+        0
+      ],
+      "id": "cee38a8d-144f-4da6-b170-3b54c7707d67",
+      "name": "Slack: Sales Ready",
+      "webhookId": "607e4e25-de85-4239-bc1c-cc0e3bd283a9"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "v_cooldown_due",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        440,
+        250
+      ],
+      "id": "bad31279-2410-40c7-a101-f01a8c551314",
+      "name": "Get Cooldown Due"
+    },
+    {
+      "parameters": {
+        "jsCode": "const until = new Date(Date.now() + 90 * 86400 * 1000).toISOString();\nreturn { json: { id: $json.id, cooldown_until: until, campaign_count: 0 } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        250
+      ],
+      "id": "706c0d80-690b-4b8b-a023-065fba2876c2",
+      "name": "Cooldown Row"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "prospects",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        880,
+        250
+      ],
+      "id": "f4225d1a-b9d8-444a-8548-a35242e0e6e0",
+      "name": "Start Cooldown"
+    },
+    {
+      "parameters": {
+        "jsCode": "return { json: { prospect_id: $json.id, event_type: 'cooldown', event_key: `${$json.id}:cooldown:${$json.cooldown_until.slice(0, 10)}`,\n  source: 'scorer', payload: { until: $json.cooldown_until } } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        250
+      ],
+      "id": "f8a2bbb3-0b67-4387-9b83-3e3db484f9b6",
+      "name": "Cooldown Event"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "create",
+        "tableId": "events",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        250
+      ],
+      "id": "ea510cea-8949-4119-9dc1-5ac4e969ec20",
+      "name": "Log Cooldown",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ebe48f59-c403-43b2-9247-5188e1dfd49f",
+              "leftValue": "={{ Boolean($('Get Cooldown Due').item.json.hubspot_contact_id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1540,
+        250
+      ],
+      "id": "ad3f58c9-2867-4109-a674-a5f925998e77",
+      "name": "Cooldown In HubSpot?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/notes",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: $now.toISO(), hs_note_body: `Still ${$('Get Cooldown Due').item.json.intent_tier} after 3 nurture campaigns. 90-day cooldown until ${$('Cooldown Row').item.json.cooldown_until.slice(0, 10)}.` } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        250
+      ],
+      "id": "f1376298-024d-45e8-97ad-9e1c0228ba01",
+      "name": "Cooldown: Create Note",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.hubapi.com/crm/v4/objects/notes/{{ $json.id }}/associations/default/contacts/{{ $('Get Cooldown Due').item.json.hubspot_contact_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1980,
+        250
+      ],
+      "id": "8dc8e2ec-c696-4d49-a960-4990a7ee62d5",
+      "name": "Cooldown: Link Note",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Sales Ready: Create Task": {
+      "main": [
+        [
+          {
+            "node": "Sales Ready: Link Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cooldown: Create Note": {
+      "main": [
+        [
+          {
+            "node": "Cooldown: Link Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily 7:07 PT": {
+      "main": [
+        [
+          {
+            "node": "Load Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Config": {
+      "main": [
+        [
+          {
+            "node": "Get Scores",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Cooldown Due",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Scores": {
+      "main": [
+        [
+          {
+            "node": "Plan Score Updates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan Score Updates": {
+      "main": [
+        [
+          {
+            "node": "Score Row",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "In HubSpot?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Newly Sales Ready?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Row": {
+      "main": [
+        [
+          {
+            "node": "Save Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "In HubSpot?": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: Score Properties",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Newly Sales Ready?": {
+      "main": [
+        [
+          {
+            "node": "Sales Ready Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sales Ready Row": {
+      "main": [
+        [
+          {
+            "node": "Mark Sales Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Sales Ready": {
+      "main": [
+        [
+          {
+            "node": "Sales Ready Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sales Ready Event": {
+      "main": [
+        [
+          {
+            "node": "Log Sales Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Sales Ready": {
+      "main": [
+        [
+          {
+            "node": "Sales Ready: Create Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sales Ready: Link Task": {
+      "main": [
+        [
+          {
+            "node": "Slack: Sales Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Cooldown Due": {
+      "main": [
+        [
+          {
+            "node": "Cooldown Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cooldown Row": {
+      "main": [
+        [
+          {
+            "node": "Start Cooldown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Cooldown": {
+      "main": [
+        [
+          {
+            "node": "Cooldown Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cooldown Event": {
+      "main": [
+        [
+          {
+            "node": "Log Cooldown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Cooldown": {
+      "main": [
+        [
+          {
+            "node": "Cooldown In HubSpot?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cooldown In HubSpot?": {
+      "main": [
+        [
+          {
+            "node": "Cooldown: Create Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Los_Angeles"
+  },
+  "tags": []
+}

@@ -1,0 +1,30 @@
+/* admin: UI audit fixes */
+.hs-owner{display:flex;flex-wrap:wrap;align-items:center;gap:6px;max-width:300px}
+.hs-owner .pill{margin-left:0}
+.hs-owner .hint{flex-basis:100%}
+.mm-item{display:flex;flex-direction:column;align-items:flex-start;gap:2px;font-weight:600}
+.mm-item .hint{font-weight:400;white-space:normal}
+.integ-check{display:flex;flex-direction:column;gap:10px}
+.integ-check-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.integ-check-head .pill{margin-left:0}
+.integ-check-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.integ-check-list a{display:inline-flex;align-items:center;gap:6px;padding:4px 12px 4px 6px;border:1px solid var(--line-strong);border-radius:var(--r-pill);color:var(--fg);text-decoration:none;font-size:.9rem;background:var(--surface);transition:border-color var(--t) var(--ease),background var(--t) var(--ease)}
+.integ-check-list a:hover{border-color:var(--accent);background:var(--raised)}
+.integ-mark{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--muted);font-size:.875rem;line-height:1}
+.integ-check-list a.done .integ-mark{background:var(--a);border-color:var(--a);color:var(--surface)}
+.integ-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.icard{scroll-margin-top:80px}
+.hs-hint{margin:0 0 8px}
+.adm-approve select{min-width:140px}
+.adm-approve .hint{flex-basis:100%}
+.more-menu .mm-btn{border-radius:8px;height:auto;padding:7px 10px;background:none;border:0;box-shadow:none;color:var(--fg);font-weight:600}
+.more-menu .mm-btn:hover{background:var(--sunk);color:var(--fg)}
+.more-menu .mm-btn:disabled{background:none;color:var(--faint)}
+.more-menu .mm-danger .mm-item>span:first-child{color:var(--crit)}
+.uavatar{border-radius:8px;vertical-align:middle;margin-right:6px}
+/* Reps and segments: distribute unassigned contacts */
+.dist{margin:12px 0}
+.dist .row{align-items:center}
+.dist-plan{margin-top:10px;padding:12px 14px;border:1px solid var(--line);border-radius:var(--r-lg);background:var(--raised)}
+.dist-plan p{margin:0 0 6px}
+.dist-plan ul{margin:0 0 10px;padding-left:18px}

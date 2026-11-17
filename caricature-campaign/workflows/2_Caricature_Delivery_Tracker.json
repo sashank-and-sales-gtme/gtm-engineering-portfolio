@@ -1,0 +1,608 @@
+{
+  "name": "Caricature 2 - Delivery Tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "caricature-ship24",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -100
+      ],
+      "id": "66443fed-11ef-499b-8b21-1c797bad52e4",
+      "name": "Ship24 Webhook",
+      "webhookId": "21902d8b-37ea-4298-b066-de72518aa487"
+    },
+    {
+      "parameters": {
+        "formTitle": "Caricature delivery confirmation",
+        "formDescription": "Use this for couriers without API tracking. Pick the prospect email and the outcome.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Prospect email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Outcome",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Delivered"
+                  },
+                  {
+                    "option": "Returned or refused"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "path": "caricature-delivery-confirm"
+        }
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        100
+      ],
+      "id": "c1efd5aa-2356-4739-a5f3-a2e5a76f5e9a",
+      "name": "Manual Delivery Form",
+      "webhookId": "caricature-delivery-confirm"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $('Ship24 Webhook').first().json.body || {};\nconst trackings = Array.isArray(body.trackings) ? body.trackings : [];\nconst out = [];\nfor (const t of trackings) {\n  const tracker = t.tracker || {};\n  const shipment = t.shipment || {};\n  const events = Array.isArray(t.events) ? t.events : [];\n  const latest = events\n    .slice()\n    .sort((a, b) => String(b.occurrenceDatetime || b.datetime || '').localeCompare(String(a.occurrenceDatetime || a.datetime || '')))[0] || {};\n  const milestone = shipment.statusMilestone || latest.statusMilestone || '';\n  const code = latest.statusCode || shipment.statusCode || '';\n  let outcome = 'update';\n  if (milestone === 'delivered') outcome = 'delivered';\n  else if (milestone === 'exception' || code === 'delivery_refused') outcome = 'not_delivered';\n  out.push({\n    tracking_number: tracker.trackingNumber || '',\n    email: '',\n    outcome,\n    status_label: `${milestone || 'unknown'}${code ? ` (${code})` : ''}`,\n    occurred_at: latest.occurrenceDatetime || latest.datetime || new Date().toISOString(),\n    source: 'ship24',\n  });\n}\nreturn out.filter((o) => o.tracking_number).map((json) => ({ json }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        -100
+      ],
+      "id": "8edbf478-aa68-42b8-b41b-7f5ebc213fde",
+      "name": "Parse Ship24"
+    },
+    {
+      "parameters": {
+        "jsCode": "const f = $json;\nreturn {\n  json: {\n    tracking_number: '',\n    email: String(f['Prospect email'] || '').trim().toLowerCase(),\n    outcome: f['Outcome'] === 'Delivered' ? 'delivered' : 'not_delivered',\n    status_label: `manual: ${f['Outcome']}`,\n    occurred_at: new Date().toISOString(),\n    source: 'manual_form',\n  },\n};",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        100
+      ],
+      "id": "38b043f3-deda-41a5-8a9c-a35d9ef5c70f",
+      "name": "Parse Form"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        440,
+        0
+      ],
+      "id": "ddabb52b-aa38-481e-81e2-3f1da69c46f3",
+      "name": "Delivery Signal"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "campaign_config",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        660,
+        0
+      ],
+      "id": "ba8b2452-cdca-4140-b51e-a855856d041e",
+      "name": "Load Config"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "prospects",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "={{ $('Delivery Signal').item.json.tracking_number ? 'tracking_number=eq.' + encodeURIComponent($('Delivery Signal').item.json.tracking_number) : 'email=eq.' + encodeURIComponent($('Delivery Signal').item.json.email) }}"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        880,
+        0
+      ],
+      "id": "e49613b9-ac53-45c3-a2a2-17d3656baeb3",
+      "name": "Find Prospect",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const sig = $('Delivery Signal').item.json;\nconst row = $json;\nif (!row.id) return { json: { action: 'unmatched', sig } };\nconst open = ['shipped', 'untracked'].includes(row.track);\nlet action = 'ignore';\nif (open && sig.outcome === 'delivered') action = 'delivered';\nelse if (open && sig.outcome === 'not_delivered') action = 'not_delivered';\nelse if (sig.outcome === 'update') action = 'update';\nconst day1 = new Date(sig.occurred_at);\nconst day1Iso = isNaN(day1) ? new Date().toISOString() : day1.toISOString();\nconst enroll = new Date(new Date(day1Iso).getTime() + (action === 'delivered' ? 4 * 3600 * 1000 : 0)).toISOString();\nreturn {\n  json: {\n    action,\n    id: row.id,\n    hubspot_contact_id: row.hubspot_contact_id,\n    first_name: row.first_name,\n    company_name: row.company_name,\n    email: row.email,\n    status_label: sig.status_label,\n    source: sig.source,\n    day1_at: day1Iso,\n    enroll_at: enroll,\n    new_track: action === 'delivered' ? 'delivered_not_scanned' : action === 'not_delivered' ? 'not_delivered' : row.track,\n  },\n};",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "35534de1-53c2-4ba6-a716-cc515028271f",
+      "name": "Decide Transition"
+    },
+    {
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 3,
+        "output": "={{ ['delivered', 'not_delivered'].includes($json.action) ? 0 : $json.action === 'update' ? 1 : $json.action === 'unmatched' ? 2 : 3 }}"
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1320,
+        0
+      ],
+      "id": "f051e612-ca3c-4625-9a94-107e6c15ee08",
+      "name": "Route"
+    },
+    {
+      "parameters": {
+        "jsCode": "return { json: { id: $json.id, track: $json.new_track, day1_at: $json.day1_at, enroll_at: $json.enroll_at } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -200
+      ],
+      "id": "0455b15c-27d4-4983-8306-e7aeb3a546b2",
+      "name": "Stage Row"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "prospects",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        -200
+      ],
+      "id": "635de61e-43a0-40de-9ac4-09d664e47ba7",
+      "name": "Update Stage"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $('Decide Transition').item.json;\nreturn { json: { prospect_id: d.id, event_type: d.action, occurred_at: d.day1_at, event_key: `${d.id}:${d.action}`, source: d.source } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        -200
+      ],
+      "id": "766af303-3288-42a1-8954-b5590a14f37c",
+      "name": "Stage Event"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "create",
+        "tableId": "events",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2200,
+        -200
+      ],
+      "id": "58054471-20a5-498a-8ae4-dcf45fc8c745",
+      "name": "Log Stage Event",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.hubapi.com/crm/v3/objects/contacts/{{ $('Decide Transition').item.json.hubspot_contact_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { caricature_stage: $('Decide Transition').item.json.action === 'delivered' ? 'Delivered' : 'Not delivered', caricature_day1_date: $('Decide Transition').item.json.day1_at.slice(0, 10) } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        -200
+      ],
+      "id": "fbd666a2-a754-49f2-9bce-21c14d9be4ba",
+      "name": "HubSpot: Stage Properties",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/notes",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: $now.toISO(), hs_note_body: `Caricature ${$('Decide Transition').item.json.action === 'delivered' ? 'delivered' : 'not delivered (returned or refused)'}. Day 1 = ${$('Decide Transition').item.json.day1_at.slice(0, 10)}. Source: ${$('Decide Transition').item.json.source} (${$('Decide Transition').item.json.status_label}).` } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2640,
+        -200
+      ],
+      "id": "4fd1bf51-b0f5-4618-9e5d-852c30dcb098",
+      "name": "Stage: Create Note",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.hubapi.com/crm/v4/objects/notes/{{ $json.id }}/associations/default/contacts/{{ $('Decide Transition').item.json.hubspot_contact_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2860,
+        -200
+      ],
+      "id": "0a2cdc84-ef5c-44c3-89d1-badec5a28f89",
+      "name": "Stage: Link Note",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Load Config').first().json.slack_channel_id }}"
+        },
+        "text": "={{ $('Decide Transition').item.json.action === 'delivered' ? `📬 Caricature delivered to ${$('Decide Transition').item.json.first_name} at ${$('Decide Transition').item.json.company_name}. Delivery email goes out in 4 hours; first call on Day 2.` : `↩️ Caricature for ${$('Decide Transition').item.json.first_name} at ${$('Decide Transition').item.json.company_name} was not delivered (${$('Decide Transition').item.json.status_label}). Rejection sequence starts now.` }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        3080,
+        -200
+      ],
+      "id": "1082e558-83ae-4fd3-8cc2-ff7d4cabc109",
+      "name": "Slack: Stage Change",
+      "webhookId": "cad25120-d07a-4b99-9df7-2b6a0e09a084"
+    },
+    {
+      "parameters": {
+        "jsCode": "return { json: { prospect_id: $json.id, event_type: 'delivery_update', occurred_at: $json.day1_at,\n  event_key: `${$json.id}:update:${$json.status_label}:${$json.day1_at}`, source: $json.source, payload: { status: $json.status_label } } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        0
+      ],
+      "id": "fc9ec1d6-9c80-4753-9fb0-894e58f2fa26",
+      "name": "Update Event"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "create",
+        "tableId": "events",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        0
+      ],
+      "id": "7cf1297d-0893-435e-a6c2-37eef03438a4",
+      "name": "Log Delivery Update",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Load Config').first().json.slack_channel_id }}"
+        },
+        "text": "={{ `⚠️ Delivery update with no matching prospect: ${$json.sig.tracking_number || $json.sig.email} (${$json.sig.status_label}). Check the tracking number in Supabase.` }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1540,
+        200
+      ],
+      "id": "781ae306-e665-413c-af0c-31a2cf4d6b18",
+      "name": "Slack: Unmatched Update",
+      "webhookId": "b1a1b0e9-5a2d-40e4-bded-0fa4785da7c9"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        400
+      ],
+      "id": "18d6796c-6437-4bd6-aca2-984d8cf0c395",
+      "name": "Already Past Delivery"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Stage: Create Note": {
+      "main": [
+        [
+          {
+            "node": "Stage: Link Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ship24 Webhook": {
+      "main": [
+        [
+          {
+            "node": "Parse Ship24",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Ship24": {
+      "main": [
+        [
+          {
+            "node": "Delivery Signal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Delivery Form": {
+      "main": [
+        [
+          {
+            "node": "Parse Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Form": {
+      "main": [
+        [
+          {
+            "node": "Delivery Signal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delivery Signal": {
+      "main": [
+        [
+          {
+            "node": "Load Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Config": {
+      "main": [
+        [
+          {
+            "node": "Find Prospect",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Prospect": {
+      "main": [
+        [
+          {
+            "node": "Decide Transition",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Transition": {
+      "main": [
+        [
+          {
+            "node": "Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route": {
+      "main": [
+        [
+          {
+            "node": "Stage Row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Event",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack: Unmatched Update",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Already Past Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage Row": {
+      "main": [
+        [
+          {
+            "node": "Update Stage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Stage": {
+      "main": [
+        [
+          {
+            "node": "Stage Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage Event": {
+      "main": [
+        [
+          {
+            "node": "Log Stage Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Stage Event": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: Stage Properties",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot: Stage Properties": {
+      "main": [
+        [
+          {
+            "node": "Stage: Create Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage: Link Note": {
+      "main": [
+        [
+          {
+            "node": "Slack: Stage Change",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Event": {
+      "main": [
+        [
+          {
+            "node": "Log Delivery Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Los_Angeles"
+  },
+  "tags": []
+}

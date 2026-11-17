@@ -1,0 +1,1173 @@
+{
+  "name": "Caricature 6 - Nurture Drafts and Approvals",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9,
+              "triggerAtMinute": 13
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "359a5481-65f2-4091-805c-a8d5aa516631",
+      "name": "Daily 9:13 PT"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "campaign_config",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "a4e4d71c-7246-490f-b44d-1be908bbea5f",
+      "name": "Load Config"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cdf3905e-780a-4d21-9a89-4b6f448b624a",
+              "leftValue": "={{ Boolean($('Load Config').first().json.n8n_base_url && $('Load Config').first().json.instantly_campaign_nurture_1 && $('Load Config').first().json.instantly_campaign_nurture_2 && $('Load Config').first().json.instantly_campaign_nurture_3) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "45aac8df-720a-485d-ba68-93c9d2485cb9",
+      "name": "Ready To Draft?"
+    },
+    {
+      "parameters": {
+        "errorMessage": "campaign_config needs n8n_base_url and instantly_campaign_nurture_1, _2 and _3 before nurture drafts can run."
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        660,
+        200
+      ],
+      "id": "ca32ca17-1f29-4ae9-9554-c3e46c87e1dc",
+      "name": "Stop: Nurture Config Missing"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "v_nurture_candidates",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        660,
+        0
+      ],
+      "id": "c583f00a-1cfc-46c3-90d6-54921e3cc2f1",
+      "name": "Get Nurture Candidates"
+    },
+    {
+      "parameters": {
+        "text": "={{ `PROSPECT\\nName: ${$json.first_name} ${$json.last_name || ''}\\nTitle: ${$json.title || 'Not provided'}\\nCompany: ${$json.company_name}\\nCaricature status: ${$json.track === 'not_delivered' ? 'package was returned, not delivered' : $json.track === 'qr_scanned' ? 'delivered and they scanned the QR code' : 'delivered'}\\nCampaign number: ${$json.campaign_number}\\nMeeting location: ${$('Load Config').first().json.meet_location}` }}",
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"subject\": {\n      \"type\": \"string\"\n    },\n    \"body\": {\n      \"type\": \"string\"\n    },\n    \"rationale\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"subject\",\n    \"body\",\n    \"rationale\"\n  ]\n}",
+        "options": {
+          "systemPromptTemplate": "You write one short personalised follow-up email for InteractAI's caricature direct-mail campaign. InteractAI is a product-aware agent that clones a company's best reps to deliver interactive demos on their website around the clock.\n\nThe prospect received (or was sent) a caricature of themselves with a card and QR code. They have not become sales ready, so this email re-opens the conversation.\n\nAngle by campaign number:\n1. Value: the delay between interest and a demo loses buyers; InteractAI answers that interest instantly.\n2. Proof: name Sprinto and Yellow.ai as teams using InteractAI, and the 3x MQLs for Sprinto at zero CAC spend. Use no other numbers.\n3. Soft close: one line on the caricature, one line of value, and an easy way to say not now.\n\nRules:\n1. Under 90 words. First line is the prospect's first name followed by a comma.\n2. Reference the caricature naturally. Reference the prospect's role or company where it helps.\n3. Never mention website visits, emails they opened, links they clicked, or any tracking.\n4. Use only the proof points listed above. Do not invent customers, numbers or features.\n5. End with one low-friction question. Offer an in-person coffee at the meeting location when it fits.\n6. Plain sentences. No em dashes, no exclamation marks, no rhetorical openers. Avoid: delve, leverage, seamless, robust, elevate, unlock, game-changing, revolutionary, transformative, cutting-edge.\n7. Subject: under six words, lowercase.\n8. No signature or sign-off. The sending tool adds it.\n9. rationale: one sentence for the reviewer on why this angle fits this prospect."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1,
+      "position": [
+        880,
+        0
+      ],
+      "id": "f208ef90-9eae-4d40-8909-c4f11bdb0da7",
+      "name": "Claude Nurture Writer"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-5-5",
+          "cachedResultName": "Claude Sonnet 5.5"
+        },
+        "options": {
+          "maxTokensToSample": 2048,
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        880,
+        220
+      ],
+      "id": "b5e02d36-ddc1-4f6d-b05b-d1a34b9886ad",
+      "name": "Claude Model: Claude Nurture Writer"
+    },
+    {
+      "parameters": {
+        "jsCode": "const c = $('Get Nurture Candidates').item.json;\nconst o = $json.output;\nreturn { json: { prospect_id: c.id, campaign_number: c.campaign_number, subject: o.subject, body: o.body, rationale: o.rationale } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "d1b1a8ac-42f7-4518-9d39-802be20ddf15",
+      "name": "Draft Row"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "create",
+        "tableId": "nurture_drafts",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        0
+      ],
+      "id": "8320ce82-8dc1-4204-bc11-a713f43f5dee",
+      "name": "Save Draft",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c90e85a7-3052-47d5-a1fb-a758e21aa2d0",
+              "leftValue": "={{ Boolean($json.id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1540,
+        0
+      ],
+      "id": "0f74e352-2bdd-4882-ab7f-bbf95d9cb7f4",
+      "name": "Draft Saved?"
+    },
+    {
+      "parameters": {
+        "jsCode": "return { json: { prospect_id: $json.prospect_id, event_type: 'nurture_drafted', event_key: `${$json.prospect_id}:draft:${$json.id}`,\n  source: 'nurture', payload: { draft_id: $json.id, campaign_number: $json.campaign_number } } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        -100
+      ],
+      "id": "a307fe8d-08c8-42fa-b314-3e493a859928",
+      "name": "Drafted Event"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "create",
+        "tableId": "events",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        -100
+      ],
+      "id": "44304a5f-ac01-4675-9b2d-cd1c0400c284",
+      "name": "Log Drafted",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Load Config').first().json.slack_channel_id }}"
+        },
+        "text": "={{ `✍️ Nurture email ${$('Save Draft').item.json.campaign_number}/3 for ${[$('Get Nurture Candidates').item.json.first_name, $('Get Nurture Candidates').item.json.last_name].filter(Boolean).join(' ')} at ${$('Get Nurture Candidates').item.json.company_name} (${$('Get Nurture Candidates').item.json.intent_tier}, ${$('Get Nurture Candidates').item.json.intent_score}/100)\\n\\n*Subject:* ${$('Save Draft').item.json.subject}\\n\\n${$('Save Draft').item.json.body}\\n\\n_${$('Save Draft').item.json.rationale}_\\n\\n✅ Approve and send: ${$('Load Config').first().json.n8n_base_url.replace(/\\/+$/, '') + '/webhook/caricature-nurture-decision?d=' + $('Save Draft').item.json.id + '&t=' + $('Save Draft').item.json.approval_token + '&a=approve'}\\n❌ Reject: ${$('Load Config').first().json.n8n_base_url.replace(/\\/+$/, '') + '/webhook/caricature-nurture-decision?d=' + $('Save Draft').item.json.id + '&t=' + $('Save Draft').item.json.approval_token + '&a=reject'}` }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        2200,
+        -100
+      ],
+      "id": "6e100847-b9f5-41cb-906a-2ddb46bea887",
+      "name": "Slack: Approve Draft",
+      "webhookId": "75871122-1b3e-4414-b897-1bc3cb7f4078"
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "caricature-nurture-decision",
+        "options": {},
+        "responseMode": "responseNode"
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        500
+      ],
+      "id": "c02d3f38-3198-4edb-a2a3-0f8a62ea35f7",
+      "name": "Decision Link",
+      "webhookId": "f885dc05-68bb-4ca5-9d13-9815805f57e2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const q = $json.query || {};\nconst d = String(q.d || '').replace(/[^a-f0-9-]/gi, '');\nconst t = String(q.t || '').replace(/[^a-f0-9]/gi, '');\nconst a = q.a === 'approve' ? 'approve' : q.a === 'reject' ? 'reject' : '';\nreturn { json: { draft_id: d, token: t, action: a, valid_input: Boolean(d && t && a) } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        500
+      ],
+      "id": "a51ebf1f-2314-4ff7-9e59-d05a096984c2",
+      "name": "Read Decision"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "nurture_drafts",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "={{ $('Read Decision').first().json.valid_input ? 'id=eq.' + $('Read Decision').first().json.draft_id + '&approval_token=eq.' + $('Read Decision').first().json.token + '&status=eq.pending' : 'id=eq.00000000-0000-0000-0000-000000000000' }}"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        440,
+        500
+      ],
+      "id": "57c2882b-000c-47c7-b34a-93da8c515684",
+      "name": "Find Draft",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d88cc29c-33e6-4de0-8afb-18f901f79819",
+              "leftValue": "={{ Boolean($json.id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        500
+      ],
+      "id": "fb9dbd44-ffc5-41f3-ab13-e7d4a70be871",
+      "name": "Draft Valid?"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "<h3>This link has expired or was already used.</h3>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        700
+      ],
+      "id": "84c3e402-68c6-4f9a-bcf9-7cc9b3dd1cc7",
+      "name": "Respond: Invalid"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4e0a1343-cb82-474c-8183-deaa58765b4b",
+              "leftValue": "={{ $('Read Decision').first().json.action === 'approve' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        880,
+        400
+      ],
+      "id": "01f3f2bb-8170-448f-a511-1af29c9ad825",
+      "name": "Approve?"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "campaign_config",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        300
+      ],
+      "id": "e4732bd5-717e-4916-a879-8f7ac83aa298",
+      "name": "Config For Send"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "prospects",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "={{ 'id=eq.' + $('Find Draft').first().json.prospect_id }}"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        300
+      ],
+      "id": "1bf29683-4217-4a3a-83d5-1f58b05a08c3",
+      "name": "Get Prospect"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v2/leads",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ campaign: $('Config For Send').first().json['instantly_campaign_nurture_' + $('Find Draft').first().json.campaign_number], email: $json.email, first_name: $json.first_name, last_name: $json.last_name || '', company_name: $json.company_name, skip_if_in_campaign: true, custom_variables: { orgName: $json.company_name, nurtureSubject: $('Find Draft').first().json.subject, nurtureBody: $('Find Draft').first().json.body } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        300
+      ],
+      "id": "05d51d5b-4080-43e5-86d0-48262975c129",
+      "name": "Instantly: Add To Nurture"
+    },
+    {
+      "parameters": {
+        "jsCode": "const dr = $('Find Draft').first().json;\nreturn [{ json: { id: dr.id, status: 'approved', decided_at: new Date().toISOString() } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        300
+      ],
+      "id": "687bb531-28fc-44ab-aacc-2106dc19e2d7",
+      "name": "Approved Draft Row"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "nurture_drafts",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2200,
+        300
+      ],
+      "id": "dcd518c4-d3bc-4c22-8f83-67eb766f1da8",
+      "name": "Mark Draft Approved"
+    },
+    {
+      "parameters": {
+        "jsCode": "const dr = $('Find Draft').first().json;\nreturn { json: { id: dr.prospect_id, campaign_count: dr.campaign_number, last_nurture_at: new Date().toISOString() } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2420,
+        300
+      ],
+      "id": "c3907b36-8df4-443c-959f-ab1cb192346f",
+      "name": "Prospect Nurture Row"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "prospects",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        300
+      ],
+      "id": "35743f2c-b674-40e7-8c33-7afe3e6fbe2d",
+      "name": "Update Prospect Count"
+    },
+    {
+      "parameters": {
+        "jsCode": "const dr = $('Find Draft').first().json;\nreturn { json: { prospect_id: dr.prospect_id, event_type: 'nurture_approved', event_key: `${dr.prospect_id}:approved:${dr.id}`,\n  source: 'nurture', payload: { draft_id: dr.id, campaign_number: dr.campaign_number } } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2860,
+        300
+      ],
+      "id": "d968b64a-87f3-4805-acad-8d47d8e1db87",
+      "name": "Approved Event"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "create",
+        "tableId": "events",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3080,
+        300
+      ],
+      "id": "2a8d9b76-1337-4533-9b1f-355006ad6d46",
+      "name": "Log Approved",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6dc10a2c-58ba-4770-80fe-a47395809894",
+              "leftValue": "={{ Boolean($('Get Prospect').first().json.hubspot_contact_id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3300,
+        300
+      ],
+      "id": "7731f8dd-a25c-4bf5-915c-0e428729ab6c",
+      "name": "Approved In HubSpot?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/notes",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: $now.toISO(), hs_note_body: `Nurture email ${$('Find Draft').first().json.campaign_number}/3 approved and queued in Instantly.<br><b>${$('Find Draft').first().json.subject}</b><br>${$('Find Draft').first().json.body.replace(/\\n/g, '<br>')}` } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3520,
+        300
+      ],
+      "id": "01a6b900-521e-462d-a70b-efa398228bb7",
+      "name": "Nurture: Create Note",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.hubapi.com/crm/v4/objects/notes/{{ $json.id }}/associations/default/contacts/{{ $('Get Prospect').first().json.hubspot_contact_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3740,
+        300
+      ],
+      "id": "fb182493-7926-4c72-9e5c-a11d0e06c154",
+      "name": "Nurture: Link Note",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ `<h3>Approved. Nurture email ${$('Find Draft').first().json.campaign_number}/3 for ${$('Get Prospect').first().json.first_name} is queued in Instantly.</h3>` }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3520,
+        500
+      ],
+      "id": "2cdf3402-1ff8-4a2e-9aca-5852ceb31a32",
+      "name": "Respond: Approved"
+    },
+    {
+      "parameters": {
+        "jsCode": "const dr = $('Find Draft').first().json;\nreturn { json: { id: dr.id, status: 'rejected', decided_at: new Date().toISOString() } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        550
+      ],
+      "id": "41f156f6-414b-4f86-81f4-8804c823f754",
+      "name": "Rejected Rows"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "nurture_drafts",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        550
+      ],
+      "id": "25f3c1ca-8ec3-4c3b-8d88-ef11b604c0a0",
+      "name": "Mark Draft Rejected"
+    },
+    {
+      "parameters": {
+        "jsCode": "const dr = $('Find Draft').first().json;\nreturn { json: { id: dr.prospect_id, last_nurture_at: new Date().toISOString() } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        550
+      ],
+      "id": "4c26ebda-41ae-4b7c-bd12-e3933ac38fac",
+      "name": "Prospect Skip Row"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "prospects",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        550
+      ],
+      "id": "732a93e9-ed3c-41ee-a9a1-065cdcfcac51",
+      "name": "Pause Prospect Nurture"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "<h3>Rejected. No email sent. This prospect gets a new draft in 14 days.</h3>",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1980,
+        550
+      ],
+      "id": "57476008-60c2-4016-8aed-dd52e8b8033a",
+      "name": "Respond: Rejected"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Claude Model: Claude Nurture Writer": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Claude Nurture Writer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nurture: Create Note": {
+      "main": [
+        [
+          {
+            "node": "Nurture: Link Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily 9:13 PT": {
+      "main": [
+        [
+          {
+            "node": "Load Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Config": {
+      "main": [
+        [
+          {
+            "node": "Ready To Draft?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ready To Draft?": {
+      "main": [
+        [
+          {
+            "node": "Get Nurture Candidates",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop: Nurture Config Missing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Nurture Candidates": {
+      "main": [
+        [
+          {
+            "node": "Claude Nurture Writer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Nurture Writer": {
+      "main": [
+        [
+          {
+            "node": "Draft Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft Row": {
+      "main": [
+        [
+          {
+            "node": "Save Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Draft": {
+      "main": [
+        [
+          {
+            "node": "Draft Saved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft Saved?": {
+      "main": [
+        [
+          {
+            "node": "Drafted Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Drafted Event": {
+      "main": [
+        [
+          {
+            "node": "Log Drafted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Drafted": {
+      "main": [
+        [
+          {
+            "node": "Slack: Approve Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decision Link": {
+      "main": [
+        [
+          {
+            "node": "Read Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Decision": {
+      "main": [
+        [
+          {
+            "node": "Find Draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Draft": {
+      "main": [
+        [
+          {
+            "node": "Draft Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft Valid?": {
+      "main": [
+        [
+          {
+            "node": "Approve?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond: Invalid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approve?": {
+      "main": [
+        [
+          {
+            "node": "Config For Send",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rejected Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config For Send": {
+      "main": [
+        [
+          {
+            "node": "Get Prospect",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Prospect": {
+      "main": [
+        [
+          {
+            "node": "Instantly: Add To Nurture",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instantly: Add To Nurture": {
+      "main": [
+        [
+          {
+            "node": "Approved Draft Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved Draft Row": {
+      "main": [
+        [
+          {
+            "node": "Mark Draft Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Draft Approved": {
+      "main": [
+        [
+          {
+            "node": "Prospect Nurture Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prospect Nurture Row": {
+      "main": [
+        [
+          {
+            "node": "Update Prospect Count",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Prospect Count": {
+      "main": [
+        [
+          {
+            "node": "Approved Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved Event": {
+      "main": [
+        [
+          {
+            "node": "Log Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Approved": {
+      "main": [
+        [
+          {
+            "node": "Approved In HubSpot?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved In HubSpot?": {
+      "main": [
+        [
+          {
+            "node": "Nurture: Create Note",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond: Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nurture: Link Note": {
+      "main": [
+        [
+          {
+            "node": "Respond: Approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rejected Rows": {
+      "main": [
+        [
+          {
+            "node": "Mark Draft Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Draft Rejected": {
+      "main": [
+        [
+          {
+            "node": "Prospect Skip Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prospect Skip Row": {
+      "main": [
+        [
+          {
+            "node": "Pause Prospect Nurture",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pause Prospect Nurture": {
+      "main": [
+        [
+          {
+            "node": "Respond: Rejected",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Los_Angeles"
+  },
+  "tags": []
+}

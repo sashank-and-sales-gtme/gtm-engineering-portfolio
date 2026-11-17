@@ -1,0 +1,66 @@
+name: Deploy backend functions
+
+# Deploys every Supabase edge function once they pass the type-check and tests, so nothing depends on a CLI login on
+# someone's laptop. Branches map to environments the same way Vercel does: the staging branch deploys to the staging
+# project, main deploys to production (the GitHub "production" environment can require an approval first). It can
+# also be run by hand from the Actions tab. Each environment holds its own PROJECT_REF variable. Database migrations
+# are not run here (see setup-supabase.yml).
+on:
+  push:
+    branches: [main, staging]
+    paths:
+      - "roster/supabase/functions/**"
+      - "roster/supabase/config.toml"
+      - ".github/workflows/deploy-functions.yml"
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Where to deploy"
+        type: choice
+        options: [staging, production]
+        default: staging
+
+concurrency:
+  group: deploy-functions-${{ inputs.target || (github.ref_name == 'main' && 'production' || 'staging') }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target || (github.ref_name == 'main' && 'production' || 'staging') }}
+    defaults:
+      run:
+        working-directory: roster
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      PROJECT_REF: ${{ vars.PROJECT_REF }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the target is configured
+        run: test -n "$PROJECT_REF" || { echo "::error::Set the PROJECT_REF variable on this GitHub environment"; exit 1; }
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Type-check every function
+        working-directory: roster/supabase/functions
+        run: deno check --no-lock --node-modules-dir=none */index.ts
+
+      - name: Run the tests
+        working-directory: roster/supabase/functions
+        run: deno test --no-lock --node-modules-dir=none --allow-env _shared/
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+
+      - name: Deploy
+        run: |
+          # verify_jwt per function comes from supabase/config.toml; the functions that check their own
+          # secret (cron, worker token, OAuth return) are deployed again without JWT checks to be explicit.
+          supabase functions deploy --project-ref "$PROJECT_REF" --use-api --yes
+          for f in oauth-callback weekly-roster queue-gate claude-work hubspot-sync apollo-phone; do
+            supabase functions deploy "$f" --project-ref "$PROJECT_REF" --no-verify-jwt --use-api --yes
+          done

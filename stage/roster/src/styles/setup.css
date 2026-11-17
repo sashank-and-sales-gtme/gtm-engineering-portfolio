@@ -1,0 +1,72 @@
+/* Admin > Setup (the onboarding wizard), the document library and the first-run checklist on Accounts. */
+.setup-lede{max-width:72ch;margin-top:4px}
+.setup-grid{display:grid;grid-template-columns:220px minmax(0,1fr);gap:28px;margin-top:20px;align-items:start}
+.setup-steps{position:sticky;top:72px}
+.setup-steps ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.setup-step{display:flex;align-items:flex-start;gap:10px;width:100%;padding:7px 8px;border:0;border-radius:8px;background:none;font:inherit;font-size:.9rem;color:var(--muted);text-align:left;cursor:pointer;transition:background var(--t) var(--ease),color var(--t) var(--ease)}
+.setup-step:hover{background:var(--sunk);color:var(--fg)}
+.setup-step[aria-current="step"]{color:var(--fg);font-weight:600;background:var(--sunk)}
+.setup-step>span:nth-child(2){display:flex;flex-direction:column;gap:1px}
+.setup-req{font-size:.875rem;font-weight:500;color:var(--b)}
+.setup-mark{flex:none;display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line-strong);font-size:.875rem;font-weight:600;line-height:1;color:var(--muted);font-variant-numeric:tabular-nums}
+.done>.setup-mark,.setup-step.done .setup-mark{background:var(--a);border-color:var(--a);color:var(--surface)}
+.setup-body{min-width:0;display:flex;flex-direction:column;gap:14px}
+.setup-title{font-family:var(--font-body);font-size:1.15rem;font-weight:600;color:var(--fg);letter-spacing:-.01em;margin:0;outline:none}
+.setup-title .muted{display:block;font-size:.875rem;font-weight:500;margin-bottom:2px}
+.setup h4{font-size:.95rem;font-weight:600;margin:10px 0 0}
+.setup .form{background:none;border:0;padding:0;gap:14px 16px}
+.setup .form label{font-size:.875rem;color:var(--fg)}
+.setup .form label .hint{font-weight:400}
+.setup .form .check{flex-direction:row;align-items:center;gap:8px;align-self:center}
+.setup .stack{display:flex;flex-direction:column;gap:10px}
+.setup .stack>.card{border-radius:var(--r);box-shadow:none}
+.setup .stack>.card .form{margin-bottom:6px}
+.setup .add-row{align-self:flex-start}
+.danger-text{color:var(--crit)}
+.btn.ghost.danger-text{box-shadow:none;border-color:transparent;background:none;padding-inline:0}
+.btn.ghost.danger-text:hover{color:var(--crit);text-decoration:underline;background:none;border-color:transparent}
+.field-err{font-size:.875rem;font-weight:500;color:var(--crit);margin:0}
+[aria-invalid="true"]{border-color:var(--crit)!important}
+.setup-foot{border-top:1px solid var(--line);padding-top:14px;margin-top:6px;display:flex;flex-direction:column;gap:8px}
+.persona-pains{display:flex;flex-direction:column;gap:10px;padding-top:12px;border-top:1px solid var(--line)}
+.persona-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.persona-head h4{margin:0}
+.setup-checks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.setup-check{display:grid;grid-template-columns:20px minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px 14px}
+.setup-check+.setup-check{border-top:1px solid var(--line)}
+.setup-check p{margin:2px 0 0}
+.setup-check .btn{align-self:center}
+li.setup-check.muted{display:block;font-size:.875rem}
+/* document library */
+.docs{display:flex;flex-direction:column;gap:12px}
+.docs-add{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.docs-drop{display:flex;flex-direction:column;justify-content:center;gap:6px;min-height:128px;padding:18px;border:1.5px dashed var(--line-strong);border-radius:var(--r);background:var(--raised);cursor:pointer;transition:border-color var(--t) var(--ease),background var(--t) var(--ease)}
+.docs-drop:hover,.docs-drop.over,.docs-drop:focus-within{border-color:var(--fg);background:var(--sunk)}
+.docs-drop strong{font-size:.95rem}
+.docs-links{display:flex;flex-direction:column;gap:6px;font-size:.875rem}
+.docs-links textarea{width:100%}
+.docs-list{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.docs-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:9px 12px}
+.docs-row+.docs-row{border-top:1px solid var(--line)}
+.docs-name{display:flex;flex-direction:column;min-width:0;font-weight:500}
+.docs-name>a,.docs-name{overflow-wrap:anywhere}
+.docs-row .pill{margin-left:0;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.docs-acts{display:flex;gap:6px}
+/* first run */
+.first-run{display:flex;flex-direction:column;gap:12px;max-width:720px;padding:8px 0}
+.first-run h2{font-family:var(--font-body);font-size:1.25rem;font-weight:600;letter-spacing:-.01em}
+@media (max-width:860px){
+  .setup-grid{grid-template-columns:minmax(0,1fr);gap:16px}
+  .setup-steps{position:static}
+  .setup-steps ol{flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:4px;scrollbar-width:none}
+  .setup-step{white-space:nowrap;width:auto;padding:6px 10px 6px 6px;border:1px solid var(--line)}
+  .setup-step>span:nth-child(2){flex-direction:row;gap:6px;align-items:baseline}
+  .docs-add{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .setup-check{grid-template-columns:20px minmax(0,1fr)}
+  .setup-check .btn{grid-column:2;justify-self:start}
+  .docs-row{grid-template-columns:minmax(0,1fr) auto}
+  .docs-row .pill{grid-column:1;justify-self:start;max-width:100%}
+  .docs-acts{grid-column:2;grid-row:1}
+}

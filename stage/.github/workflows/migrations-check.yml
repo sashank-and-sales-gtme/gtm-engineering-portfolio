@@ -1,0 +1,38 @@
+name: Check migrations
+
+# Builds a throwaway local Supabase database from every migration plus the seed, the same way a fresh project is set
+# up, then runs the pgTAP tests in supabase/tests/db (sign-up rules today, workspace isolation once tenancy lands).
+# A migration that only works on top of a hand-patched database fails here before it reaches staging.
+on:
+  pull_request:
+    paths:
+      - "roster/supabase/migrations/**"
+      - "roster/supabase/seed.sql"
+      - "roster/supabase/tests/db/**"
+      - ".github/workflows/migrations-check.yml"
+  push:
+    branches: [main, staging]
+    paths:
+      - "roster/supabase/migrations/**"
+      - "roster/supabase/seed.sql"
+      - "roster/supabase/tests/db/**"
+      - ".github/workflows/migrations-check.yml"
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: roster
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.121.0
+
+      - name: Build the database from scratch
+        run: supabase db start
+
+      - name: Run the database tests
+        run: supabase test db supabase/tests/db

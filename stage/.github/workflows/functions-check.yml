@@ -1,0 +1,34 @@
+name: Check backend functions
+
+# Supabase deploys edge functions without type-checking them. This catches type errors and failing tests
+# before a deploy instead of after. The functions import packages with npm: specifiers, so Deno uses its own
+# package cache (--node-modules-dir=none) instead of looking for node_modules from the frontend's package.json.
+on:
+  pull_request:
+    paths:
+      - "roster/supabase/functions/**"
+      - ".github/workflows/functions-check.yml"
+  push:
+    branches: [main, staging]
+    paths:
+      - "roster/supabase/functions/**"
+      - ".github/workflows/functions-check.yml"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: roster/supabase/functions
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Type-check every function
+        run: deno check --no-lock --node-modules-dir=none */index.ts
+
+      - name: Run the tests
+        run: deno test --no-lock --node-modules-dir=none --allow-env _shared/

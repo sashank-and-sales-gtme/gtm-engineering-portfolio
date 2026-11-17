@@ -1,0 +1,934 @@
+{
+  "name": "Caricature 3 - Intent Ingestor",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "ia-track",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -300
+      ],
+      "id": "3679a625-be30-4175-a01b-72b2246c5410",
+      "name": "Website Pixel",
+      "webhookId": "79302b0c-08b3-4971-9659-ea957c4a31a8"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "caricature-instantly",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -100
+      ],
+      "id": "29962cc4-a6d5-442c-871d-e70f2a80ed62",
+      "name": "Instantly Webhook",
+      "webhookId": "b90fd551-70c9-486c-9469-855a7ab5b26d"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "caricature-factors",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        100
+      ],
+      "id": "9235b5c7-7af6-4d26-9973-4fc7ab2324b6",
+      "name": "Factors Webhook",
+      "webhookId": "ac6084ba-b480-40fc-a08c-9303a6201836"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "caricature-maya",
+        "options": {},
+        "authentication": "headerAuth"
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "id": "120b2467-1a8b-4176-a032-be09498a6b51",
+      "name": "Maya Webhook",
+      "webhookId": "83103769-dc05-4b6d-af35-34f7629fdc94"
+    },
+    {
+      "parameters": {
+        "jsCode": "const q = $json.query || {};\nconst allowed = { qr: 'qr_scan', pv: 'page_view', demo: 'demo_engaged', lpc: 'lp_contact_session' };\nconst event_type = allowed[q.ev];\nconst pid = String(q.pid || '').replace(/[^a-z0-9]/gi, '').slice(0, 32);\nconst sid = String(q.sid || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 64);\nif (!event_type || !pid || !sid) return { json: { skip: true } };\nconst path = String(q.path || '/').slice(0, 300);\nreturn { json: {\n  lookup: `token=eq.${pid}`, event_type, session_id: sid, path, source: 'website_pixel',\n  first_in_session: q.first === '1', occurred_at: new Date().toISOString(),\n  key_suffix: event_type === 'page_view' ? `pv:${sid}:${path}` : `${event_type}:${sid}`, payload: {},\n} };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        -300
+      ],
+      "id": "69436d96-5efe-4bb8-8d30-4b71ab75bdeb",
+      "name": "Normalize Pixel"
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = $json.body || {};\nconst map = { email_sent: 'email_sent', email_opened: 'email_opened', link_clicked: 'email_clicked',\n  email_link_clicked: 'email_clicked', reply_received: 'email_replied', email_bounced: 'email_bounced',\n  lead_unsubscribed: 'unsubscribed' };\nconst event_type = map[b.event_type];\nconst email = String(b.lead_email || b.email || '').trim().toLowerCase();\nif (!event_type || !email) return { json: { skip: true } };\nconst step = b.step ?? '';\nconst ts = b.timestamp || new Date().toISOString();\nconst once = { email_opened: `open:${b.campaign_id}:${step}`, email_sent: `sent:${b.campaign_id}:${step}` };\nreturn { json: {\n  lookup: `email=eq.${encodeURIComponent(email)}`, event_type, session_id: null, path: null, source: 'instantly',\n  first_in_session: false, occurred_at: ts,\n  key_suffix: once[event_type] || `${event_type}:${b.campaign_id}:${step}:${ts}`,\n  payload: { campaign_id: b.campaign_id, step, link_url: b.link_url || b.url || '', reply_text: b.reply_text_snippet || b.reply_text || '' },\n} };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        -100
+      ],
+      "id": "e651fd14-01f9-435d-b09d-c7de7933c7c8",
+      "name": "Normalize Instantly"
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = $json.body || {};\nconst mp = b.MessageProperty;\nconst raw = String(b.domain || b.website || (mp ? (mp[0] ?? mp['0'])?.PropValue : '') || '').toLowerCase();\nconst domain = raw.replace(/^[a-z]+:\\/\\//, '').replace(/^www\\./, '').split(/[\\/?#]/)[0];\nif (!/\\.[a-z]{2,}$/.test(domain)) return { json: { skip: true } };\nconst hour = new Date().toISOString().slice(0, 13);\nreturn { json: {\n  lookup: `company_domain=eq.${encodeURIComponent(domain)}`, event_type: 'account_visit', session_id: null, path: null,\n  source: 'factors', first_in_session: false, occurred_at: new Date().toISOString(), key_suffix: `acct:${hour}`, payload: { domain },\n} };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        100
+      ],
+      "id": "34639b35-396a-40b5-a285-4e1bf9402537",
+      "name": "Normalize Factors"
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = $json.body || {};\nconst email = String(b.email || '').trim().toLowerCase();\nconst pid = String(b.pid || '').replace(/[^a-z0-9]/gi, '');\nif (!email && !pid) return { json: { skip: true } };\nconst ts = b.timestamp || new Date().toISOString();\nreturn { json: {\n  lookup: pid ? `token=eq.${pid}` : `email=eq.${encodeURIComponent(email)}`, event_type: 'maya_interaction',\n  session_id: null, path: null, source: 'maya', first_in_session: false, occurred_at: ts,\n  key_suffix: `maya:${ts}`, payload: { detail: String(b.detail || b.event || '').slice(0, 300) },\n} };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        300
+      ],
+      "id": "99f6b17f-a480-48c3-a476-d6057b1f8d62",
+      "name": "Normalize Maya"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "skipcheck",
+              "leftValue": "={{ $json.skip === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "2b07306b-888e-444b-9fc9-e3e9d63c9c4d",
+      "name": "Intent Signal"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "campaign_config",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        660,
+        0
+      ],
+      "id": "e7456ad1-4088-4378-9f52-96464ffdea9b",
+      "name": "Load Config"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "prospects",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "={{ $('Intent Signal').item.json.lookup + '&status=neq.stopped' }}"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        880,
+        0
+      ],
+      "id": "3246d5d9-fdcd-457f-b9ea-d8fb853b18c8",
+      "name": "Find Prospects"
+    },
+    {
+      "parameters": {
+        "jsCode": "const sig = $('Intent Signal').item.json;\nconst p = $json;\nreturn { json: {\n  prospect: p, session_id: sig.session_id, path: sig.path, source: sig.source,\n  first_in_session: sig.first_in_session, payload: sig.payload,\n  row: { prospect_id: p.id, event_type: sig.event_type, occurred_at: sig.occurred_at, session_id: sig.session_id,\n         path: sig.path, source: sig.source, event_key: `${p.id}:${sig.key_suffix}`, payload: sig.payload },\n} };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "7c4ca495-2adf-4f88-82fb-1b65ea36eb18",
+      "name": "Build Event"
+    },
+    {
+      "parameters": {
+        "jsCode": "return { json: $json.row };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        0
+      ],
+      "id": "26442d05-bb8b-4147-b7c0-8fd97df53cd5",
+      "name": "Event Row"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "create",
+        "tableId": "events",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        0
+      ],
+      "id": "db51bd9c-8418-4c9e-9f97-8dec97f352f4",
+      "name": "Insert Event",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ff502e4e-4686-4e43-ab6a-5893735c2363",
+              "leftValue": "={{ Boolean($json.id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        0
+      ],
+      "id": "726d4fdf-f2c3-4f9e-8c1f-11d73c7d2128",
+      "name": "New Event?"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        200
+      ],
+      "id": "a5b9912a-371b-45a5-b981-cfd9ccc0a1a3",
+      "name": "Duplicate: Skip"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Runs once per inserted (new) event. Decides HubSpot, Slack, call-task and state changes.\nconst ev = $json;                                   // row returned by Supabase insert\nconst ctx = $('Build Event').item.json;             // prospect + signal context\nconst p = ctx.prospect;\nconst cfg = $('Load Config').first().json;\nconst who = `${p.first_name}${p.last_name ? ' ' + p.last_name : ''} at ${p.company_name}`;\nconst plan = {\n  event_id: ev.id, event_type: ev.event_type, prospect_id: p.id, hubspot_contact_id: p.hubspot_contact_id,\n  instantly_lead_id: p.instantly_lead_id || '', note: '', slack: '', call_task: false,\n  task_subject: '', task_body: '', patch: null, remove_from_instantly: false,\n};\nconst meet = cfg.meet_location || 'Blue Bottle';\nswitch (ev.event_type) {\n  case 'qr_scan': {\n    if (!p.first_qr_at) {\n      plan.patch = { id: p.id, track: 'qr_scanned', first_qr_at: ev.occurred_at };\n      plan.remove_from_instantly = Boolean(p.instantly_lead_id) && p.track === 'delivered_not_scanned';\n      plan.slack = `🔥 QR scanned: ${who} landed on the site from the caricature card. Journey monitoring is on.`;\n    }\n    plan.note = `Caricature QR code scanned. Landed on ${ctx.path || '/'} (session ${ctx.session_id}).`;\n    break;\n  }\n  case 'demo_engaged':\n    plan.note = `Engaged with the interactive demo on ${ctx.path || 'the site'}.`;\n    plan.slack = `🎯 ${who} engaged with the interactive demo.`;\n    break;\n  case 'lp_contact_session':\n    plan.note = `Session that started from the caricature QR landing ended on the contact page.`;\n    plan.slack = `🚨 ${who} went from the QR landing straight to the contact page. Call now.`;\n    plan.call_task = true;\n    plan.task_subject = `Call now: ${who} reached the contact page from the QR`;\n    plan.task_body = `High intent: the QR session ended on the contact page. Use the caricature as the opener and push for an in-person meeting at their office or ${meet}.`;\n    break;\n  case 'page_view':\n    if (ctx.first_in_session) {\n      plan.note = `Website visit started on ${ctx.path || '/'}.`;\n      plan.slack = `👀 ${who} is on the website (${ctx.path || '/'}). Brand recall window is open.`;\n    }\n    break;\n  case 'account_visit':\n    plan.note = `Account-level website visit detected via ${ctx.source}.`;\n    plan.slack = `👀 Someone from ${p.company_name} is on the website (${ctx.source}). Prospect: ${who}.`;\n    break;\n  case 'email_opened':\n    plan.note = `Opened caricature email (step ${ctx.payload?.step ?? '?'}).`;\n    break;\n  case 'email_clicked': {\n    const url = String(ctx.payload?.link_url || '');\n    plan.note = `Clicked a link in the caricature email: ${url || 'unknown link'}.`;\n    if (/interactnow\\.ai/i.test(url)) {\n      plan.slack = `🤖 ${who} opened the Maya demo link from the email.`;\n      plan.call_task = true;\n      plan.task_subject = `Call: ${who} opened the Maya demo link`;\n      plan.task_body = `They interacted with the Maya link. Use the caricature as the opener and push for an office visit or ${meet}.`;\n    }\n    break;\n  }\n  case 'maya_interaction':\n    plan.note = `Interacted with Maya${ctx.payload?.detail ? `: ${ctx.payload.detail}` : ''}.`;\n    plan.slack = `🤖 ${who} interacted with Maya.`;\n    plan.call_task = true;\n    plan.task_subject = `Call: ${who} interacted with Maya`;\n    plan.task_body = `They interacted with Maya. Use the caricature as the opener and push for an office visit or ${meet}.`;\n    break;\n  case 'email_replied':\n    plan.patch = { id: p.id, status: 'replied' };\n    plan.note = `Replied to the caricature email: \"${String(ctx.payload?.reply_text || '').slice(0, 500)}\"`;\n    plan.slack = `💬 ${who} replied to the caricature email. Sequences stopped. Call and push for an office visit.`;\n    plan.call_task = true;\n    plan.task_subject = `Reply received: call ${who} and push for an office visit`;\n    plan.task_body = `Reply: ${String(ctx.payload?.reply_text || '').slice(0, 1000)}`;\n    break;\n  case 'email_bounced':\n  case 'unsubscribed':\n    plan.patch = { id: p.id, status: 'stopped' };\n    plan.note = ev.event_type === 'email_bounced' ? 'Caricature email bounced. Campaign stopped.' : 'Unsubscribed. Campaign stopped.';\n    plan.slack = `⛔ ${who}: ${ev.event_type === 'email_bounced' ? 'email bounced' : 'unsubscribed'}. Campaign stopped.`;\n    break;\n  default:\n    break;\n}\nreturn { json: plan };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        -100
+      ],
+      "id": "8c50bfda-5dbb-4b14-9050-b385abe8983b",
+      "name": "Plan Actions"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9a38083b-38f7-4fc0-98aa-aae84d36a6a7",
+              "leftValue": "={{ Boolean($json.patch) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2200,
+        -400
+      ],
+      "id": "da0b95c8-7599-4644-bf8a-cc1ea94c8e11",
+      "name": "Has Patch?"
+    },
+    {
+      "parameters": {
+        "jsCode": "return { json: $json.patch };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2420,
+        -400
+      ],
+      "id": "3dbccd08-ee51-44c9-b1f2-4b5d45c6e7da",
+      "name": "Patch Row"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "prospects",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        -400
+      ],
+      "id": "24c2fddf-f2ca-45bf-aaac-5aa0ca0960e2",
+      "name": "Update Prospect"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f64bce6c-afa3-436b-9eca-cceb4c8d2a7a",
+              "leftValue": "={{ $json.remove_from_instantly }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2200,
+        -250
+      ],
+      "id": "6db01469-3fa2-4ae6-a984-c9fc73950c91",
+      "name": "Remove From Instantly?"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.instantly.ai/api/v2/leads/{{ $json.instantly_lead_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        -250
+      ],
+      "id": "bfe2aad8-825c-4255-9338-2f7e4259d8af",
+      "name": "Instantly: Delete Lead",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f2c763f2-1a89-45ae-bb54-f5762ce83146",
+              "leftValue": "={{ Boolean($json.note && $json.hubspot_contact_id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2200,
+        -100
+      ],
+      "id": "34d985f7-5288-4702-aa59-e0e47aa2259c",
+      "name": "Has Note?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/notes",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: $now.toISO(), hs_note_body: $('Plan Actions').item.json.note } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        -100
+      ],
+      "id": "ef4d191b-dc04-490e-a6ac-42b1aa0c3192",
+      "name": "Intent: Create Note",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.hubapi.com/crm/v4/objects/notes/{{ $json.id }}/associations/default/contacts/{{ $('Plan Actions').item.json.hubspot_contact_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2640,
+        -100
+      ],
+      "id": "eaa1463e-e73a-4c2e-87ea-872d28b39d8e",
+      "name": "Intent: Link Note",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "11b64629-11d6-4661-b154-f1f5e1a9d083",
+              "leftValue": "={{ Boolean($json.slack) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2200,
+        50
+      ],
+      "id": "0551dbd1-1887-4bfb-b94b-2d843d4321eb",
+      "name": "Has Slack?"
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Load Config').first().json.slack_channel_id }}"
+        },
+        "text": "={{ $json.slack }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        2420,
+        50
+      ],
+      "id": "a6db0417-b04b-412c-a1c8-e6efad810082",
+      "name": "Slack: Intent Alert",
+      "webhookId": "5e7c71c7-15e6-42e1-8e5a-91941f5a2b58"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1b0f35ce-42c4-4e06-b75a-f14adfe5d6a1",
+              "leftValue": "={{ $json.call_task && Boolean($json.hubspot_contact_id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2200,
+        200
+      ],
+      "id": "27d97c9f-8fbd-4770-8853-685f2ff3dd56",
+      "name": "Needs Call Task?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/tasks",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: Object.assign({ hs_timestamp: $now.plus({ hours: 2 }).toUTC().toISO(), hs_task_subject: $('Plan Actions').item.json.task_subject, hs_task_body: $('Plan Actions').item.json.task_body, hs_task_status: 'NOT_STARTED', hs_task_priority: 'HIGH', hs_task_type: 'CALL' }, $('Load Config').first().json.hubspot_owner_id ? { hubspot_owner_id: $('Load Config').first().json.hubspot_owner_id } : {}) }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        200
+      ],
+      "id": "0d18fc5a-66d7-4776-bc01-349ca9b78498",
+      "name": "Intent: Create Task",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.hubapi.com/crm/v4/objects/tasks/{{ $json.id }}/associations/default/contacts/{{ $('Plan Actions').item.json.hubspot_contact_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2640,
+        200
+      ],
+      "id": "e5048626-0dd3-407b-ad68-59866cb04050",
+      "name": "Intent: Link Task",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Intent: Create Note": {
+      "main": [
+        [
+          {
+            "node": "Intent: Link Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intent: Create Task": {
+      "main": [
+        [
+          {
+            "node": "Intent: Link Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Website Pixel": {
+      "main": [
+        [
+          {
+            "node": "Normalize Pixel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Pixel": {
+      "main": [
+        [
+          {
+            "node": "Intent Signal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instantly Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Instantly",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Instantly": {
+      "main": [
+        [
+          {
+            "node": "Intent Signal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Factors Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Factors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Factors": {
+      "main": [
+        [
+          {
+            "node": "Intent Signal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Maya Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Maya",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Maya": {
+      "main": [
+        [
+          {
+            "node": "Intent Signal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intent Signal": {
+      "main": [
+        [
+          {
+            "node": "Load Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Config": {
+      "main": [
+        [
+          {
+            "node": "Find Prospects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Prospects": {
+      "main": [
+        [
+          {
+            "node": "Build Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Event": {
+      "main": [
+        [
+          {
+            "node": "Event Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Event Row": {
+      "main": [
+        [
+          {
+            "node": "Insert Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Event": {
+      "main": [
+        [
+          {
+            "node": "New Event?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New Event?": {
+      "main": [
+        [
+          {
+            "node": "Plan Actions",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Duplicate: Skip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan Actions": {
+      "main": [
+        [
+          {
+            "node": "Has Patch?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Remove From Instantly?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Has Note?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Has Slack?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Needs Call Task?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Patch?": {
+      "main": [
+        [
+          {
+            "node": "Patch Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Patch Row": {
+      "main": [
+        [
+          {
+            "node": "Update Prospect",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove From Instantly?": {
+      "main": [
+        [
+          {
+            "node": "Instantly: Delete Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Note?": {
+      "main": [
+        [
+          {
+            "node": "Intent: Create Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Slack?": {
+      "main": [
+        [
+          {
+            "node": "Slack: Intent Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Call Task?": {
+      "main": [
+        [
+          {
+            "node": "Intent: Create Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Los_Angeles"
+  },
+  "tags": []
+}

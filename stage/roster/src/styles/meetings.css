@@ -1,0 +1,13 @@
+/* meetings: UI audit fixes */
+.when{font-family:var(--font-body);font-size:.875rem;line-height:1.4;font-variant-numeric:tabular-nums}
+.when b{display:block;font-size:.92rem}
+.meet-book{align-items:center;gap:10px}
+.meet-group{display:flex;flex-direction:column;gap:10px}
+.meet-count{font-weight:400;font-size:.9rem}
+.meet-missing{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.meet-link{word-break:break-all}
+.meet-confirm{margin:0 14px 12px}
+.prep-empty{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.mrow .actions{display:flex;flex-wrap:wrap;align-items:center;gap:6px;justify-content:flex-end}
+@media (max-width:820px){.mrow .actions{justify-content:flex-start}}
+.meet-book .book-slot a.btn{text-decoration:none}

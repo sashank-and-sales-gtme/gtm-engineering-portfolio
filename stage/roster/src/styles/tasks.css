@@ -1,0 +1,56 @@
+/* tasks: UI audit fixes */
+
+/* Card: let the "⋯" menus overflow; keep rounded corners on the rows instead. */
+.tcard{overflow:visible}
+.tcard>.trow:first-child{border-top-left-radius:inherit;border-top-right-radius:inherit}
+.tcard>.trow:last-child{border-bottom-left-radius:inherit;border-bottom-right-radius:inherit}
+
+/* Row grid: grip | kind or checkbox | body | actions */
+.tcard .trow{grid-template-columns:auto auto minmax(0,1fr) auto;align-items:start}
+.tgrip{display:flex;gap:2px;align-items:flex-start;flex-wrap:nowrap}
+.tlead{display:flex;align-items:center;min-height:24px}
+.tlead input[type=checkbox]{width:18px;height:18px;margin:0;flex:none}
+.tbody{min-width:0;overflow-wrap:anywhere}
+.tbody .form{margin-top:8px}
+.toutcome{margin-top:8px}
+
+/* Move arrows: only for keyboard users, when focus is inside the row. */
+.trow .mv{display:none}
+.trow:focus-within .mv{display:flex}
+@supports selector(:has(a)){
+  .trow:focus-within:not(:has(:focus-visible)) .mv{display:none}
+}
+
+/* Late: open item whose time passed earlier today. */
+.trow.late{box-shadow:inset 3px 0 0 var(--c);background:color-mix(in srgb,var(--c-soft) 35%,var(--surface))}
+.trow.late.over{box-shadow:inset 3px 0 0 var(--c),inset 0 2px 0 var(--accent)}
+
+/* Task title doubles as the edit button. */
+.tedit-open{font:inherit;font-weight:600;color:inherit;background:none;border:0;padding:0;margin:0;text-align:left;cursor:pointer;max-width:100%;overflow-wrap:anywhere}
+.tedit-open:hover{text-decoration:underline}
+.tedit-open:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.tbody.done .tedit-open{text-decoration:line-through;color:var(--muted)}
+.tedit{margin-top:0}
+
+.thcount{font-weight:400;color:var(--muted);font-size:.85em}
+
+/* Add a task: calendar checkbox with its hint. */
+.tcal{display:flex;flex-direction:column;gap:4px;align-self:end}
+.form label.tcal-box{flex-direction:row;align-items:center;gap:8px;color:var(--fg);font-size:.875rem;font-weight:400}
+.tcal-box input:disabled+*{opacity:.6}
+.form label.tcal-box:has(input:disabled){color:var(--muted);cursor:not-allowed}
+
+@media (max-width:820px){
+  /* grip spans the left edge; kind badge and body stack in the remaining width */
+  .tcard .trow{grid-template-columns:auto auto minmax(0,1fr);gap:8px 10px;padding:10px 12px}
+  .tcard .trow>.tgrip{grid-column:1;grid-row:1/span 3}
+  .tcard .trow>.tlead{grid-column:2/-1}
+  .tcard .trow>.tbody{grid-column:2/-1}
+  .tcard .trow.tk-task>.tlead{grid-column:2;grid-row:1}
+  .tcard .trow.tk-task>.tbody{grid-column:3;grid-row:1}
+  .tcard .trow>.actions{grid-column:2/-1;justify-content:flex-start}
+  .tcard .trow.tk-task>.actions{grid-column:3}
+  .tbody .form{grid-template-columns:minmax(0,1fr)}
+  .tcard .trow>.actions .more-menu{left:0;right:auto}
+}
+.tcard .tbody button.tedit-open{font-size:inherit;font-weight:700;line-height:inherit;letter-spacing:inherit}

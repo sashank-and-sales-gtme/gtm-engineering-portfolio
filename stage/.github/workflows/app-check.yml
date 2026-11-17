@@ -1,0 +1,57 @@
+name: Check app and worker
+
+# Type-checks and builds the frontend the way Vercel will, and runs the API worker's tests, on every pull request and
+# push to main that touches them. Vercel builds on its own, so without this a type error only shows up as a failed
+# deploy.
+on:
+  pull_request:
+    paths:
+      - "roster/src/**"
+      - "roster/index.html"
+      - "roster/package*.json"
+      - "roster/tsconfig*.json"
+      - "roster/vite.config.ts"
+      - "roster/worker/**"
+      - ".github/workflows/app-check.yml"
+  push:
+    branches: [main, staging]
+    paths:
+      - "roster/src/**"
+      - "roster/index.html"
+      - "roster/package*.json"
+      - "roster/tsconfig*.json"
+      - "roster/vite.config.ts"
+      - "roster/worker/**"
+      - ".github/workflows/app-check.yml"
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: roster
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: roster/package-lock.json
+      - run: npm ci
+      - name: Type-check and build
+        run: npm run build
+
+  worker:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: roster/worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: roster/worker/package-lock.json
+      - run: npm ci
+      - run: npm test

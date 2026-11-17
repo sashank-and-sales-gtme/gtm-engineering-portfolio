@@ -1,0 +1,110 @@
+name: Set up Supabase
+
+# Applies the migrations, saves server settings and the scheduler secret, and deploys the functions for one GitHub
+# environment (staging or production). Each environment holds its own PROJECT_REF and APP_URL variables and its own
+# SUPABASE_DB_PASSWORD secret; the "production" environment can require an approval before this runs.
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Which environment to set up"
+        type: choice
+        options: [staging, production]
+        default: staging
+      include_seed:
+        description: "Load seed.sql (settings and roles; safe to repeat, existing rows are kept)"
+        type: boolean
+        default: false
+      rotate_cron_secret:
+        description: "Replace the scheduler secret with a new one"
+        type: boolean
+        default: false
+      reset_database:
+        description: "Wipe the database and rebuild it from the migrations and seed (deletes all data). Type the project ref to confirm."
+        type: string
+        default: ""
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.target }}
+    defaults:
+      run:
+        working-directory: roster
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      PROJECT_REF: ${{ vars.PROJECT_REF }}
+      APP_URL: ${{ vars.APP_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the target is configured
+        run: |
+          test -n "$PROJECT_REF" || { echo "::error::Set the PROJECT_REF variable on the ${{ inputs.target }} environment"; exit 1; }
+          test -n "$APP_URL" || { echo "::error::Set the APP_URL variable on the ${{ inputs.target }} environment"; exit 1; }
+          test -n "$SUPABASE_DB_PASSWORD" || { echo "::error::Set the SUPABASE_DB_PASSWORD secret on the ${{ inputs.target }} environment"; exit 1; }
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install the Supabase CLI
+        run: npm install -g supabase@2.118.0
+
+      - name: Link the project
+        run: supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD" --yes
+
+      - name: Wipe and rebuild the database
+        if: ${{ inputs.reset_database != '' }}
+        env:
+          CONFIRM: ${{ inputs.reset_database }}
+        run: |
+          if [ "$CONFIRM" != "$PROJECT_REF" ]; then echo "::error::reset_database must be exactly $PROJECT_REF"; exit 1; fi
+          supabase db reset --linked --yes
+
+      - name: Create the database and load the seed data
+        if: ${{ inputs.reset_database == '' }}
+        env:
+          SEED: ${{ inputs.include_seed && '--include-seed' || '' }}
+        run: supabase db push $SEED --password "$SUPABASE_DB_PASSWORD" --yes
+
+      - name: Save server settings and the scheduler secret
+        env:
+          ROTATE: ${{ inputs.rotate_cron_secret }}
+        run: |
+          supabase secrets set --project-ref "$PROJECT_REF" APP_URL="$APP_URL"
+          # The cron jobs send the Vault copy of this secret; the functions check it against CRON_SECRET.
+          # Keep the existing pair unless it is missing or a new one was asked for, so they never drift apart.
+          if [ "$ROTATE" != "true" ] && supabase secrets list --project-ref "$PROJECT_REF" | grep -qw CRON_SECRET; then
+            echo "Scheduler secret already set; keeping it."
+          else
+            CRON_SECRET="$(openssl rand -hex 32)"
+            echo "::add-mask::$CRON_SECRET"
+            supabase db query --linked "delete from vault.secrets where name in ('project_url','cron_secret'); select vault.create_secret('https://${PROJECT_REF}.supabase.co', 'project_url'); select vault.create_secret('${CRON_SECRET}', 'cron_secret');" > /dev/null
+            supabase secrets set --project-ref "$PROJECT_REF" CRON_SECRET="$CRON_SECRET"
+            echo "New scheduler secret saved."
+          fi
+
+      - name: Point sign-in links at the app
+        run: |
+          # Confirmation, invite and reset emails link to the Site URL, and Auth only redirects to listed URLs.
+          # Existing redirect URLs are kept; the app's own and local development's are added if missing.
+          API="https://api.supabase.com/v1/projects/$PROJECT_REF/config/auth"
+          AUTH=(-H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN")
+          CURRENT="$(curl -fsS "${AUTH[@]}" "$API" | jq -r '.uri_allow_list // ""')"
+          LIST="$(printf '%s\n' "$CURRENT" | tr ',' '\n' | cat - <(printf '%s\n' "$APP_URL/**" "http://localhost:5173/**") \
+            | sed '/^\s*$/d' | awk '!seen[$0]++' | paste -sd, -)"
+          jq -n --arg site "$APP_URL" --arg list "$LIST" '{site_url: $site, uri_allow_list: $list}' \
+            | curl -fsS -X PATCH "${AUTH[@]}" -H "Content-Type: application/json" --data @- "$API" \
+            | jq -r '"Site URL: \(.site_url)\nRedirect URLs: \(.uri_allow_list)"'
+
+      - name: Deploy the backend functions
+        run: |
+          supabase functions deploy --project-ref "$PROJECT_REF" --use-api --yes
+          for f in oauth-callback weekly-roster queue-gate claude-work hubspot-sync apollo-phone; do
+            supabase functions deploy "$f" --project-ref "$PROJECT_REF" --no-verify-jwt --use-api --yes
+          done
+
+      - name: Done
+        run: echo "Supabase is set up."

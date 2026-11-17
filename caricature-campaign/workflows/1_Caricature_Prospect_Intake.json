@@ -1,0 +1,620 @@
+{
+  "name": "Caricature 1 - Prospect Intake",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "caricature-intake",
+        "options": {},
+        "authentication": "headerAuth",
+        "responseMode": "responseNode"
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "5107a936-311a-479c-92de-240ce955eb48",
+      "name": "Intake Webhook",
+      "webhookId": "3a02484a-62c5-4a7b-9c12-fe1b980ee23c"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "campaign_config",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "6b8fdd37-03a7-43be-9296-42e7a12fc57f",
+      "name": "Load Config"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $('Intake Webhook').first().json.body || {};\nconst list = Array.isArray(body.prospects) ? body.prospects : [body];\nconst UNTRACKED = ['', 'doordash', 'dunzo', 'porter', 'swiggy genie', 'uber', 'other', 'hand delivery'];\nconst slugify = (s) => String(s).toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');\nconst problems = [];\nconst out = list.map((p, i) => {\n  const email = String(p.email || '').trim().toLowerCase();\n  const first = String(p.first_name || p.firstName || '').trim();\n  const company = String(p.company_name || p.orgName || p.company || '').trim();\n  if (!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) problems.push(`row ${i + 1}: invalid email \"${p.email || ''}\"`);\n  if (!first) problems.push(`row ${i + 1}: first_name missing`);\n  if (!company) problems.push(`row ${i + 1}: company_name missing`);\n  const carrier = String(p.carrier || '').trim().toLowerCase();\n  const tracking = String(p.tracking_number || '').trim();\n  const domain = String(p.company_domain || email.split('@')[1] || '').toLowerCase().replace(/^www\\./, '');\n  return {\n    email, first_name: first, last_name: String(p.last_name || p.lastName || '').trim(),\n    title: String(p.title || '').trim(), company_name: company, company_slug: slugify(company),\n    company_domain: domain, carrier, tracking_number: tracking,\n    trackable: Boolean(tracking) && !UNTRACKED.includes(carrier),\n  };\n});\nif (problems.length) throw new Error(`Intake rejected. ${problems.join('; ')}`);\nreturn out.map((json) => ({ json }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "e1891ba2-ebd7-4b64-bf02-133ac49be88c",
+      "name": "Normalize Prospects"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/contacts/batch/upsert",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ inputs: [{ idProperty: 'email', id: $json.email, properties: { email: $json.email, firstname: $json.first_name, lastname: $json.last_name, jobtitle: $json.title, company: $json.company_name, caricature_stage: 'Shipped' } }] }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        0
+      ],
+      "id": "b0adf629-1b7e-44e6-984e-adc08fa724fb",
+      "name": "HubSpot: Upsert Contact"
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $('Normalize Prospects').item.json;\nconst row = {\n  email: p.email, first_name: p.first_name, last_name: p.last_name || null, title: p.title || null,\n  company_name: p.company_name, company_slug: p.company_slug, company_domain: p.company_domain || null,\n  hubspot_contact_id: String($json.results?.[0]?.id ?? ''),\n  carrier: p.carrier || null,\n  track: p.trackable ? 'shipped' : 'untracked',\n};\nif (p.tracking_number) row.tracking_number = p.tracking_number;\nreturn { json: row };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "id": "329d4ac2-3f0b-4867-be1f-bbc8cac16b80",
+      "name": "Prospect Row"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "create",
+        "tableId": "prospects",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        0
+      ],
+      "id": "a36200d7-b2da-4cd5-afa7-c5c2db1c1269",
+      "name": "Create Prospect",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "0ac09912-4787-4035-b039-989d86210ef4",
+              "leftValue": "={{ Boolean($json.id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1320,
+        0
+      ],
+      "id": "ffd86aac-b50b-45e0-9284-66da9e55e194",
+      "name": "Prospect Created?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cfg = $('Load Config').first().json;\nconst base = String(cfg.website_base_url || 'https://interactlabs.ai').replace(/\\/+$/, '');\nconst qs = new URLSearchParams({\n  utm_source: 'direct_mail',\n  utm_medium: 'caricature_doll',\n  utm_campaign: `${$json.company_slug}_outreach`,\n  utm_content: $json.token,\n});\nconst lp_url = `${base}/?${qs.toString()}`;\nconst qr_png_url = `https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&margin=20&data=${encodeURIComponent(lp_url)}`;\nreturn { json: { id: $json.id, lp_url, qr_png_url } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        -100
+      ],
+      "id": "0009e729-7606-45d9-848d-41cbabd0e52d",
+      "name": "Build Links"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "prospects",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        -100
+      ],
+      "id": "c3bd2d17-2c7f-4c7a-a232-1222261688ef",
+      "name": "Save Links"
+    },
+    {
+      "parameters": {
+        "jsCode": "return { json: { prospect_id: $json.id, event_type: 'shipped', event_key: `${$json.id}:shipped`, source: 'intake' } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        -100
+      ],
+      "id": "ebeaeff5-b055-4455-9893-2731ad53c4da",
+      "name": "Shipped Event"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "create",
+        "tableId": "events",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2200,
+        -100
+      ],
+      "id": "3236ba90-f8ca-4e1b-9993-80c8c92de1d2",
+      "name": "Log Shipped",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.hubapi.com/crm/v3/objects/contacts/{{ $('Create Prospect').item.json.hubspot_contact_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { caricature_lp_url: $('Build Links').item.json.lp_url } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        -100
+      ],
+      "id": "c6fa91d2-e6a5-4976-8769-581f11772b91",
+      "name": "HubSpot: Save LP URL",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "34491870-d49c-4873-9766-24a46416ece9",
+              "leftValue": "={{ $('Create Prospect').item.json.track === 'shipped' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2640,
+        -100
+      ],
+      "id": "808efde4-34ad-4dfb-90e2-a64778980da4",
+      "name": "Trackable?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ship24.com/public/v1/trackers",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ trackingNumber: $('Create Prospect').item.json.tracking_number, clientTrackerId: $('Create Prospect').item.json.id }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2860,
+        -200
+      ],
+      "id": "6dc2257c-b86c-4541-8ed0-a5e0b35a9ec7",
+      "name": "Ship24: Create Tracker",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const id = $('Create Prospect').item.json.id;\nconst trackerId = $json.data?.tracker?.trackerId;\nreturn { json: trackerId ? { id, ship24_tracker_id: trackerId } : { id } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3080,
+        -200
+      ],
+      "id": "f6f6baec-de75-4a12-a50f-da3beecba737",
+      "name": "Tracker Row"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "prospects",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3300,
+        -200
+      ],
+      "id": "facb7860-0ca6-4ea5-a19f-7877dc6c7e71",
+      "name": "Save Tracker"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        3540,
+        0
+      ],
+      "id": "1fc80828-8c0a-47b2-92a2-1d5ebc44d2bd",
+      "name": "Collect Results"
+    },
+    {
+      "parameters": {
+        "jsCode": "const created = $('Build Links').all().map((i) => {\n  const row = $('Create Prospect').all().find((r) => r.json.id === i.json.id)?.json || {};\n  return { email: row.email, company: row.company_name, track: row.track, lp_url: i.json.lp_url, qr_png_url: i.json.qr_png_url };\n});\nlet failed = [];\ntry {\n  failed = $('Prospect Created?').all(1).map((i) => ({ error: i.json.error?.message || i.json.message || 'insert failed (duplicate email or tracking number?)' }));\n} catch (e) { failed = []; }\nconst trackers = (() => { try { return $('Ship24: Create Tracker').all(); } catch (e) { return []; } })();\nconst trackerErrors = trackers.filter((t) => t.json.error).length;\nreturn [{ json: { created, failed, tracker_errors: trackerErrors, created_count: created.length, failed_count: failed.length } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3760,
+        0
+      ],
+      "id": "8d7c19df-6c4e-478c-ba13-6a859add8e1c",
+      "name": "Intake Summary"
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Load Config').first().json.slack_channel_id }}"
+        },
+        "text": "={{ `📦 Caricature intake: ${$json.created_count} added, ${$json.failed_count} failed${$json.tracker_errors ? `, ${$json.tracker_errors} tracker errors (check Ship24)` : ''}\\n\\n` + $json.created.map(c => `• ${c.company} (${c.email}) | ${c.track === 'untracked' ? 'manual delivery confirmation needed' : 'tracked via Ship24'}\\n   QR: ${c.qr_png_url}`).join('\\n') + ($json.failed.length ? `\\n\\nFailed:\\n` + $json.failed.map(f => `• ${f.error}`).join('\\n') : '') }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        3980,
+        -100
+      ],
+      "id": "dad50047-139b-49f1-9846-151910a7d4b2",
+      "name": "Slack: Intake Summary",
+      "webhookId": "177bd962-b455-462c-8661-483b639d2a45"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($('Intake Summary').first().json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3980,
+        100
+      ],
+      "id": "d6a9891a-ee7b-414c-aac2-1e98e5506b79",
+      "name": "Respond"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Intake Webhook": {
+      "main": [
+        [
+          {
+            "node": "Load Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Config": {
+      "main": [
+        [
+          {
+            "node": "Normalize Prospects",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Prospects": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: Upsert Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot: Upsert Contact": {
+      "main": [
+        [
+          {
+            "node": "Prospect Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prospect Row": {
+      "main": [
+        [
+          {
+            "node": "Create Prospect",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Prospect": {
+      "main": [
+        [
+          {
+            "node": "Prospect Created?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prospect Created?": {
+      "main": [
+        [
+          {
+            "node": "Build Links",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Collect Results",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Build Links": {
+      "main": [
+        [
+          {
+            "node": "Save Links",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Links": {
+      "main": [
+        [
+          {
+            "node": "Shipped Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shipped Event": {
+      "main": [
+        [
+          {
+            "node": "Log Shipped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Shipped": {
+      "main": [
+        [
+          {
+            "node": "HubSpot: Save LP URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HubSpot: Save LP URL": {
+      "main": [
+        [
+          {
+            "node": "Trackable?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trackable?": {
+      "main": [
+        [
+          {
+            "node": "Ship24: Create Tracker",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Collect Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Ship24: Create Tracker": {
+      "main": [
+        [
+          {
+            "node": "Tracker Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tracker Row": {
+      "main": [
+        [
+          {
+            "node": "Save Tracker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Tracker": {
+      "main": [
+        [
+          {
+            "node": "Collect Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Results": {
+      "main": [
+        [
+          {
+            "node": "Intake Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Intake Summary": {
+      "main": [
+        [
+          {
+            "node": "Slack: Intake Summary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Los_Angeles"
+  },
+  "tags": []
+}

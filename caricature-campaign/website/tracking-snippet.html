@@ -1,0 +1,57 @@
+<!-- InteractAI caricature campaign tracking. Paste before </body> on every page of interactlabs.ai. -->
+<!-- Set ENDPOINT to your n8n production webhook URL for the "Website Pixel" node (path: ia-track). -->
+<script>
+(function () {
+  var ENDPOINT = 'https://YOUR-N8N-HOST/webhook/ia-track';
+  var CONTACT_PATH = '/contact';
+
+  try {
+    var store = window.localStorage;
+    var sess = window.sessionStorage;
+    var params = new URLSearchParams(window.location.search);
+    var qrLanding = params.get('utm_medium') === 'caricature_doll' && !!params.get('utm_content');
+
+    if (qrLanding) {
+      store.setItem('ia_pid', params.get('utm_content').replace(/[^a-z0-9]/gi, '').slice(0, 32));
+      sess.setItem('ia_qr_session', '1');
+    }
+
+    var pid = store.getItem('ia_pid');
+    if (!pid) return; // only prospects who arrived via their caricature QR code are tracked
+
+    var sid = sess.getItem('ia_sid');
+    var newSession = !sid;
+    if (newSession) {
+      sid = Math.random().toString(36).slice(2) + Date.now().toString(36);
+      sess.setItem('ia_sid', sid);
+    }
+
+    var send = function (ev, first) {
+      var q = new URLSearchParams({ pid: pid, ev: ev, sid: sid, path: window.location.pathname, first: first ? '1' : '0' });
+      new Image().src = ENDPOINT + '?' + q.toString();
+    };
+    var once = function (key, fn) {
+      if (sess.getItem(key)) return;
+      sess.setItem(key, '1');
+      fn();
+    };
+
+    if (qrLanding) send('qr', false);
+    send('pv', newSession && !qrLanding); // a QR landing already raises its own alert
+
+    if (sess.getItem('ia_qr_session') === '1' && window.location.pathname.indexOf(CONTACT_PATH) === 0) {
+      once('ia_lpc_sent', function () { send('lpc', false); });
+    }
+
+    // Interactive demo engagement: call window.iaTrackDemo() from the demo widget's start event,
+    // or add data-ia-demo to the element that launches the demo.
+    window.iaTrackDemo = function () { once('ia_demo_sent', function () { send('demo', false); }); };
+    document.addEventListener('click', function (e) {
+      var el = e.target && e.target.closest ? e.target.closest('[data-ia-demo]') : null;
+      if (el) window.iaTrackDemo();
+    }, true);
+  } catch (err) {
+    // storage blocked (private mode or cookie settings): tracking is skipped silently
+  }
+})();
+</script>

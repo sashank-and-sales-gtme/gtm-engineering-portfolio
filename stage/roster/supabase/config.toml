@@ -1,0 +1,79 @@
+# Supabase project configuration for Stage Prospect - SDR Control Tower.
+# Set project_id to your project ref (supabase link writes it too).
+project_id = "xeglnoezergedvmvibye"
+
+[auth]
+site_url = "http://localhost:5173"
+# Add your Vercel production URL and preview pattern here and in the dashboard.
+additional_redirect_urls = ["http://localhost:5173", "https://*.vercel.app"]
+
+# Sign-in is email and password for now (invite-only; see enforce_allowed_domain). Google, Microsoft and Zoho
+# sign-in are planned; Google is still used for Calendar and the invite mailbox through the app's own OAuth client.
+minimum_password_length = 8
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+double_confirm_changes = true
+
+[auth.external.google]
+enabled = false
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+skip_nonce_check = false
+
+# User-facing functions verify the Supabase JWT.
+[functions.hubspot-note]
+verify_jwt = true
+
+[functions.prep-brief]
+verify_jwt = true
+
+[functions.post-call-email]
+verify_jwt = true
+
+[functions.reschedule-email]
+verify_jwt = true
+
+[functions.add-company]
+verify_jwt = true
+
+[functions.integrations-status]
+verify_jwt = true
+
+[functions.integrations]
+verify_jwt = true
+
+[functions.calendar]
+verify_jwt = true
+
+[functions.crm-guard]
+verify_jwt = true
+
+[functions.invite-user]
+verify_jwt = true
+
+# OAuth redirect target: providers call it without a Supabase JWT; trust comes from the signed state.
+[functions.oauth-callback]
+verify_jwt = false
+
+# Cron / internal functions authenticate with the CRON_SECRET bearer instead.
+[functions.weekly-roster]
+verify_jwt = false
+
+[functions.queue-gate]
+verify_jwt = false
+
+# The Claude worker authenticates with its own worker token (Admin > Integrations > Claude worker).
+[functions.claude-work]
+verify_jwt = false
+
+[functions.hubspot-sync]
+verify_jwt = false
+
+# Apollo posts phone reveals here; the URL carries an HMAC signature per lead.
+[functions.apollo-phone]
+verify_jwt = false
+
+[functions.documents]
+verify_jwt = true

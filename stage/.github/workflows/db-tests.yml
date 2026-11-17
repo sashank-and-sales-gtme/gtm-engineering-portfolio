@@ -1,0 +1,45 @@
+name: Check database logic
+
+# Runs the SQL tests for database functions (lead distribution today) on a throwaway Postgres. tests/stubs.sql
+# stands in for the Supabase pieces (auth.uid, cron, the tables) so the migration itself is what gets tested.
+on:
+  pull_request:
+    paths:
+      - "roster/supabase/migrations/**"
+      - "roster/supabase/tests/**"
+      - ".github/workflows/db-tests.yml"
+  push:
+    branches: [main, staging]
+    paths:
+      - "roster/supabase/migrations/**"
+      - "roster/supabase/tests/**"
+      - ".github/workflows/db-tests.yml"
+
+jobs:
+  sql:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 2s --health-timeout 5s --health-retries 20
+    defaults:
+      run:
+        working-directory: roster/supabase
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lead distribution
+        run: |
+          psql -v ON_ERROR_STOP=1 -q \
+            -f tests/stubs.sql \
+            -f migrations/20261021000023_lead_distribution.sql \
+            -f tests/lead_distribution_test.sql

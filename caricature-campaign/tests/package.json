@@ -1,0 +1,8 @@
+{
+  "name": "caricature-campaign-tests",
+  "private": true,
+  "scripts": {
+    "test": "node workflows_test.js ../workflows && node snippet_test.js ../website/tracking-snippet.html"
+  },
+  "dependencies": { "luxon": "^3.5.0" }
+}

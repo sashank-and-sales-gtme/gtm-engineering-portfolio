@@ -1,0 +1,791 @@
+{
+  "name": "Caricature 5 - Cadence Runner",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a114c9a9-bc09-4d97-88eb-7a9a3884e8d6",
+      "name": "Every Hour"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "campaign_config",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "0a0c9e8b-703f-4fca-a487-e08cb691312f",
+      "name": "Load Config"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7da490bb-3042-4f36-9841-b2a835978d40",
+              "leftValue": "={{ Boolean($('Load Config').first().json.instantly_campaign_delivered && $('Load Config').first().json.instantly_campaign_not_delivered) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "3945f49e-c4dd-4d3e-be6d-0dc367b7adfa",
+      "name": "Campaigns Configured?"
+    },
+    {
+      "parameters": {
+        "errorMessage": "campaign_config is missing instantly_campaign_delivered or instantly_campaign_not_delivered."
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        660,
+        200
+      ],
+      "id": "5045f24a-e6ba-4c9e-a0b5-57b84c91028b",
+      "name": "Stop: Missing Campaign IDs"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "v_due_enrollments",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        660,
+        -150
+      ],
+      "id": "f3616842-2c13-4bd9-b66c-18c53a053a14",
+      "name": "Get Due Enrollments"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.instantly.ai/api/v2/leads",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ campaign: $json.campaign_id, email: $json.email, first_name: $json.first_name, last_name: $json.last_name || '', company_name: $json.company_name, skip_if_in_campaign: true, custom_variables: { orgName: $json.company_name, meetDay: $json.meet_day, lpUrl: $json.lp_url || '' } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        -150
+      ],
+      "id": "517518d7-1305-42f5-a47f-d65e3d776801",
+      "name": "Instantly: Add Lead",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $('Get Due Enrollments').item.json;\nif ($json.error) return { json: { failed: true, id: d.id, email: d.email, error: $json.error.message || JSON.stringify($json.error) } };\nconst row = { id: d.id, enrolled_at: new Date().toISOString() };\nif ($json.id) row.instantly_lead_id = $json.id;\nreturn { json: row };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1100,
+        -150
+      ],
+      "id": "ed491c49-97f0-4469-bb33-5aaf6e6c503d",
+      "name": "Enrollment Row"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ecf7ec98-b901-44d3-bae4-8ce6afad21fb",
+              "leftValue": "={{ !$json.failed }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1320,
+        -150
+      ],
+      "id": "8cd0a4f8-33f4-47e0-9639-353ed083ec3b",
+      "name": "Enrolled?"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "prospects",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1540,
+        -250
+      ],
+      "id": "11dfe406-fe68-4ba2-adb9-8c7ff8a27e4c",
+      "name": "Save Enrollment"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $('Get Due Enrollments').item.json;\nreturn { json: { prospect_id: d.id, event_type: 'enrolled', event_key: `${d.id}:enrolled:${d.track}`, source: 'cadence',\n  payload: { campaign_id: d.campaign_id, track: d.track } } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        -250
+      ],
+      "id": "3c0dc71b-bd51-4ff8-b05d-6717eb23340e",
+      "name": "Enrolled Event"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "create",
+        "tableId": "events",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        -250
+      ],
+      "id": "da85b6a5-2999-47e0-9d62-ff1dcdbd4ff3",
+      "name": "Log Enrolled",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "29023d98-4b34-43c9-a62f-90c106f292a0",
+              "leftValue": "={{ Boolean($('Get Due Enrollments').item.json.hubspot_contact_id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2200,
+        -250
+      ],
+      "id": "82b27367-0e04-4dba-8529-30dc02c50a0f",
+      "name": "Enrolled In HubSpot?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/notes",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: $now.toISO(), hs_note_body: `Enrolled in the ${$('Get Due Enrollments').item.json.track === 'delivered_not_scanned' ? 'successful delivery' : 'package rejection'} email sequence (Instantly).` } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2420,
+        -250
+      ],
+      "id": "99d91eaf-f51d-48d3-a63c-661452777793",
+      "name": "Enrolled: Create Note",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.hubapi.com/crm/v4/objects/notes/{{ $json.id }}/associations/default/contacts/{{ $('Get Due Enrollments').item.json.hubspot_contact_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2640,
+        -250
+      ],
+      "id": "5a5b34e5-1ed7-4abf-b6c1-9d05c392b07e",
+      "name": "Enrolled: Link Note",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Load Config').first().json.slack_channel_id }}"
+        },
+        "text": "={{ `⚠️ Instantly enrollment failed for ${$json.email}: ${$json.error}. It will retry next hour.` }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1540,
+        -50
+      ],
+      "id": "46009880-35ef-4f87-ae64-d4b6d19f8d2d",
+      "name": "Slack: Enrollment Failed",
+      "webhookId": "e603472f-a53a-453e-8131-80cbc4674afe"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "v_due_calls",
+        "returnAll": true,
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        660,
+        150
+      ],
+      "id": "4e95ebb9-e3eb-4966-9113-716c1685b3cc",
+      "name": "Get Due Calls"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cfg = $('Load Config').first().json;\nconst c = $json;\nconst sender = cfg.sender_name || 'Sudhir';\nconst meet = cfg.meet_location || 'Blue Bottle';\nconst f = c.first_name;\nconst delivered = c.track === 'delivered_not_scanned';\nconst angle = delivered\n  ? `Open with the caricature on their desk, then move to the value: a product-aware agent that runs interactive demos 24/7. Push for an in-person meeting at their office or ${meet}.`\n  : `Open with the caricature that got stuck at ${c.company_name}'s mailroom and offer to hand-deliver it. Move to the value: a product-aware agent that runs interactive demos 24/7. Push for an in-person meeting at their office or ${meet}.`;\nconst voice = c.call_number === 4\n  ? `Hi ${f}, ${sender} from InteractAI. Last call from me. If timing is off, no problem, I'll stop reaching out. If the mini-${f} deserves a proper handover, just reply to my email.`\n  : delivered\n    ? `Hi ${f}, ${sender} from InteractAI. Hope the mini-${f} found a spot on your desk. We turn site visitors into booked demos for teams like Sprinto. Coffee this week? I'll text a time.`\n    : `Hi ${f}, ${sender} from InteractAI. Your caricature got stuck at ${c.company_name}'s mailroom, so I'd love to hand it over in person. We help teams like Sprinto book more demos. Coffee this week?`;\nconst lines = [`Day ${c.call_day} call (${c.call_number} of 4), ${delivered ? 'delivered, QR not scanned' : 'package not delivered'} track.`, '', `Angle: ${angle}`];\nif (c.call_number >= 2) {\n  lines.push('', `If DNP, leave this voice note (keep it under 15 seconds):`, voice);\n}\nif (c.call_number === 4) {\n  lines.push('', 'If DNP, this is the final touch. Make the stop-communication intent clear.');\n}\nreturn { json: {\n  id: c.id, hubspot_contact_id: c.hubspot_contact_id || '', call_day: c.call_day,\n  subject: `Caricature call ${c.call_number}/4 (Day ${c.call_day}): ${c.first_name}${c.last_name ? ' ' + c.last_name : ''}, ${c.company_name}`,\n  body: lines.join('\\n'),\n} };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        150
+      ],
+      "id": "f04b7b90-f78f-407c-a52d-32a7f9f26e2e",
+      "name": "Build Call Task"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f0a30640-9f15-4d68-ad0a-0a3013692ef0",
+              "leftValue": "={{ Boolean($json.hubspot_contact_id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1100,
+        150
+      ],
+      "id": "8ea86a50-4dd1-4c50-87a8-a7251267e21a",
+      "name": "Call In HubSpot?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/tasks",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: Object.assign({ hs_timestamp: $now.plus({ hours: 2 }).toUTC().toISO(), hs_task_subject: $('Build Call Task').item.json.subject, hs_task_body: $('Build Call Task').item.json.body, hs_task_status: 'NOT_STARTED', hs_task_priority: 'HIGH', hs_task_type: 'CALL' }, $('Load Config').first().json.hubspot_owner_id ? { hubspot_owner_id: $('Load Config').first().json.hubspot_owner_id } : {}) }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1320,
+        150
+      ],
+      "id": "0aac624e-6c30-4aa1-b85b-74a8aad74e33",
+      "name": "Cadence: Create Task",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.hubapi.com/crm/v4/objects/tasks/{{ $json.id }}/associations/default/contacts/{{ $('Build Call Task').item.json.hubspot_contact_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotAppToken",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1540,
+        150
+      ],
+      "id": "23c4b5a5-38f9-4fa2-b4c0-482e7bcc5244",
+      "name": "Cadence: Link Task",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = $('Build Call Task').item.json; return { json: { id: b.id, last_call_day: b.call_day } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        150
+      ],
+      "id": "c17cda40-5c98-41d0-9456-0812c504c39d",
+      "name": "Call Row"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "prospects",
+        "filterType": "manual",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1980,
+        150
+      ],
+      "id": "2661dda7-b720-4a6d-b48e-5f4a7f7f9d35",
+      "name": "Save Call Day"
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = $('Build Call Task').item.json;\nreturn { json: { prospect_id: b.id, event_type: 'call_task_created', event_key: `${b.id}:call:${b.call_day}`, source: 'cadence', payload: { day: b.call_day } } };",
+        "mode": "runOnceForEachItem"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2200,
+        150
+      ],
+      "id": "e0b1ea27-c596-45f8-9a24-5abbfb4ae2bb",
+      "name": "Call Event"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "create",
+        "tableId": "events",
+        "dataToSend": "autoMapInputData"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2420,
+        150
+      ],
+      "id": "146ab7b0-8723-4f89-a6fe-414af7e97429",
+      "name": "Log Call Task",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Load Config').first().json.slack_channel_id }}"
+        },
+        "text": "={{ `⚠️ Call ${$json.call_day} due for prospect ${$json.id} but it has no HubSpot contact ID. Task not created.` }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1320,
+        350
+      ],
+      "id": "355b1af3-6a0d-4cbe-b6cc-16da1bce3947",
+      "name": "Slack: Missing HubSpot ID",
+      "webhookId": "a03376a8-cd48-482d-a615-7ce5099602b6"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Enrolled: Create Note": {
+      "main": [
+        [
+          {
+            "node": "Enrolled: Link Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cadence: Create Task": {
+      "main": [
+        [
+          {
+            "node": "Cadence: Link Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Every Hour": {
+      "main": [
+        [
+          {
+            "node": "Load Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Config": {
+      "main": [
+        [
+          {
+            "node": "Campaigns Configured?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Campaigns Configured?": {
+      "main": [
+        [
+          {
+            "node": "Get Due Enrollments",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Due Calls",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop: Missing Campaign IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Due Enrollments": {
+      "main": [
+        [
+          {
+            "node": "Instantly: Add Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instantly: Add Lead": {
+      "main": [
+        [
+          {
+            "node": "Enrollment Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrollment Row": {
+      "main": [
+        [
+          {
+            "node": "Enrolled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrolled?": {
+      "main": [
+        [
+          {
+            "node": "Save Enrollment",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack: Enrollment Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Enrollment": {
+      "main": [
+        [
+          {
+            "node": "Enrolled Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrolled Event": {
+      "main": [
+        [
+          {
+            "node": "Log Enrolled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Enrolled": {
+      "main": [
+        [
+          {
+            "node": "Enrolled In HubSpot?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrolled In HubSpot?": {
+      "main": [
+        [
+          {
+            "node": "Enrolled: Create Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Due Calls": {
+      "main": [
+        [
+          {
+            "node": "Build Call Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Call Task": {
+      "main": [
+        [
+          {
+            "node": "Call In HubSpot?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call In HubSpot?": {
+      "main": [
+        [
+          {
+            "node": "Cadence: Create Task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack: Missing HubSpot ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cadence: Link Task": {
+      "main": [
+        [
+          {
+            "node": "Call Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Row": {
+      "main": [
+        [
+          {
+            "node": "Save Call Day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Call Day": {
+      "main": [
+        [
+          {
+            "node": "Call Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Event": {
+      "main": [
+        [
+          {
+            "node": "Log Call Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Los_Angeles"
+  },
+  "tags": []
+}

@@ -1,0 +1,1742 @@
+{
+  "name": "Rover - Allbound Account Research",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "991c4f2b-5b29-4207-a45d-73f047f221d8",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        0
+      ],
+      "id": "42739960-32e3-44e8-bfe0-de7ac89c378b",
+      "name": "Webhook",
+      "webhookId": "991c4f2b-5b29-4207-a45d-73f047f221d8"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $json.body || {};\nconst mp = body.MessageProperty;\nconst fromIntentAlert = mp ? (mp[0] ?? mp['0'])?.PropValue : undefined;\nconst raw = String(body.domain || body.website || fromIntentAlert || '').trim().toLowerCase();\nconst domain = raw\n  .replace(/^[a-z]+:\\/\\//, '')\n  .replace(/^www\\./, '')\n  .split(/[\\/?#]/)[0]\n  .replace(/:\\d+$/, '');\nif (!/^[a-z0-9-]+(\\.[a-z0-9-]+)*\\.[a-z]{2,}$/.test(domain)) {\n  throw new Error(`Webhook payload has no valid domain. Received: \"${raw}\"`);\n}\nconst suppliedName = String(body.company_name || body.companyName || body.name || '').trim();\nconst root = domain.split('.')[0];\nreturn [{\n  json: {\n    domain,\n    company_name: suppliedName || root.charAt(0).toUpperCase() + root.slice(1),\n    company_name_source: suppliedName ? 'webhook' : 'domain',\n    data_source: fromIntentAlert ? 'intent_alert' : 'webhook',\n    received_at: new Date().toISOString(),\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -980,
+        0
+      ],
+      "id": "b1e0777b-e74e-44b8-ae94-3a977472ee2f",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eac8696a-9b94-4930-a74b-ea8211f393b8",
+              "name": "seller_company",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "4fbaa099-b111-4190-8faf-4f9e9892d74c",
+              "name": "seller_offering",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "11637a27-c8bc-4fa2-a5c2-e304de7a7ff4",
+              "name": "icp_definition",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "5c498a82-b56a-4a86-9387-db9b97b77f27",
+              "name": "tier_definitions",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "583bea45-297c-4d55-a96c-903914c7b7e2",
+              "name": "fit_threshold",
+              "value": 60,
+              "type": "number"
+            },
+            {
+              "id": "ca1d4122-56cb-4e92-b109-a44da9de5baa",
+              "name": "persona_titles",
+              "value": "cmo, cro, vp sales, vp marketing, head of sales, head of marketing, demand generation, revops, chief of staff, founders office",
+              "type": "string"
+            },
+            {
+              "id": "482c88ba-6a00-4170-9627-e24b6ba2d2bb",
+              "name": "persona_seniorities",
+              "value": "c_suite, founder, vp, head, director",
+              "type": "string"
+            },
+            {
+              "id": "c72eb928-8f4e-4838-a7f8-b38a4d027216",
+              "name": "max_contacts",
+              "value": 10,
+              "type": "number"
+            },
+            {
+              "id": "d0e811c8-6d66-4132-bad3-f3a95f3463fe",
+              "name": "news_lookback_days",
+              "value": 90,
+              "type": "number"
+            },
+            {
+              "id": "da90b613-db09-46d2-a049-2b966775b935",
+              "name": "journey_api_url_template",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "16e67748-3aae-4940-818c-27fbec068b89",
+              "name": "slack_channel_id",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -760,
+        0
+      ],
+      "id": "a9e24491-315d-40a7-a0ba-d673ff959a68",
+      "name": "Seller & ICP Config"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "30f03eb4-ca05-4aa8-b2b8-4b023b63cffc",
+              "leftValue": "={{ Boolean($('Seller & ICP Config').first().json.icp_definition && $('Seller & ICP Config').first().json.seller_company && $('Seller & ICP Config').first().json.seller_offering && $('Seller & ICP Config').first().json.slack_channel_id) }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -540,
+        0
+      ],
+      "id": "7c17274d-0391-4537-9028-98028f6eeb99",
+      "name": "Config Complete?"
+    },
+    {
+      "parameters": {
+        "errorMessage": "Seller & ICP Config is incomplete. Fill seller_company, seller_offering, icp_definition and slack_channel_id before running."
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -320,
+        200
+      ],
+      "id": "0a0c6388-77e6-43ec-91ac-eda4982a279a",
+      "name": "Stop: ICP Config Missing"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "company",
+        "operation": "searchByDomain",
+        "domain": "={{ $('Normalize Input').first().json.domain }}",
+        "returnAll": false,
+        "limit": 1,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.1,
+      "position": [
+        -320,
+        0
+      ],
+      "id": "7dd39fe4-6a3f-4550-9f2b-5860da20abcc",
+      "name": "Search HubSpot by Domain",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5a6eda3d-ba47-4826-bce3-ed5e78f286f8",
+              "name": "hs_company_id",
+              "value": "={{ $json.companyId ? String($json.companyId) : '' }}",
+              "type": "string"
+            },
+            {
+              "id": "b2ef1fd1-af7d-4d2b-afb6-53b8e8e756f9",
+              "name": "is_new",
+              "value": "={{ !$json.companyId }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -100,
+        0
+      ],
+      "id": "49a1c48c-ce57-48f9-a62a-a7d1c3cf3634",
+      "name": "Account State"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.exa.ai/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ query: `${$('Normalize Input').first().json.company_name} (${$('Normalize Input').first().json.domain}) company overview: products, customers, business model, headcount, funding`, type: 'auto', category: 'company', numResults: 3, contents: { text: { maxCharacters: 3000 }, summary: true } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        120,
+        0
+      ],
+      "id": "56cb18f4-e948-4130-9ee3-310d991c703d",
+      "name": "Exa: Company Profile",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.exa.ai/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ query: `${$('Normalize Input').first().json.company_name} ${$('Normalize Input').first().json.domain} news: funding, hiring, leadership changes, product launches, partnerships, expansion`, type: 'auto', category: 'news', numResults: 8, startPublishedDate: $now.minus({ days: $('Seller & ICP Config').first().json.news_lookback_days }).toISODate(), contents: { highlights: true, summary: true } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        340,
+        0
+      ],
+      "id": "89ec00e5-6795-49ba-9ff8-29bac0cc2b2c",
+      "name": "Exa: Recent News",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.exa.ai/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ query: `${$('Normalize Input').first().json.company_name} products, pricing, customers, integrations, careers`, type: 'auto', includeDomains: [$('Normalize Input').first().json.domain], numResults: 6, contents: { text: { maxCharacters: 2500 } } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "a85cf4c3-144c-42a9-bfb8-bd1506436744",
+      "name": "Exa: Company Website",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const sections = [\n  ['Company profile', 'Exa: Company Profile'],\n  ['Recent news', 'Exa: Recent News'],\n  ['Company website', 'Exa: Company Website'],\n];\nconst blocks = [];\nconst sources = [];\nconst errors = [];\nfor (const [label, node] of sections) {\n  const out = $(node).first().json;\n  if (out.error) {\n    errors.push(`${label}: ${typeof out.error === 'string' ? out.error : JSON.stringify(out.error)}`);\n    continue;\n  }\n  for (const r of out.results || []) {\n    const id = `S${sources.length + 1}`;\n    sources.push({ id, section: label, title: r.title || '', url: r.url || '', published: r.publishedDate || '' });\n    const parts = [];\n    if (r.summary) parts.push(`Summary: ${r.summary}`);\n    if (Array.isArray(r.highlights) && r.highlights.length) parts.push(`Highlights: ${r.highlights.join(' | ')}`);\n    if (r.text) parts.push(`Text: ${String(r.text).slice(0, 2500)}`);\n    blocks.push(`[${id}] (${label}) ${r.title || 'Untitled'}\\nURL: ${r.url}\\nPublished: ${r.publishedDate || 'unknown'}\\n${parts.join('\\n')}`);\n  }\n}\nconst research_text = blocks.length\n  ? blocks.join('\\n\\n').slice(0, 40000)\n  : 'NO RESEARCH RETRIEVED. Exa returned no usable results for this account.';\nreturn [{ json: { research_text, sources, source_count: sources.length, exa_errors: errors } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        780,
+        0
+      ],
+      "id": "abaadeff-5897-4374-a2f5-ea0204a0b235",
+      "name": "Build Research Bundle"
+    },
+    {
+      "parameters": {
+        "text": "={{ `ACCOUNT\\nCompany: ${$('Normalize Input').first().json.company_name}\\nDomain: ${$('Normalize Input').first().json.domain}\\n\\nSELLER\\n${$('Seller & ICP Config').first().json.seller_company}: ${$('Seller & ICP Config').first().json.seller_offering}\\n\\nICP DEFINITION\\n${$('Seller & ICP Config').first().json.icp_definition}\\n\\nTIER DEFINITIONS\\n${$('Seller & ICP Config').first().json.tier_definitions || 'Not provided. Use the default score bands.'}\\n\\nFIT THRESHOLD\\n${$('Seller & ICP Config').first().json.fit_threshold}\\n\\nRESEARCH (${$('Build Research Bundle').first().json.source_count} sources)\\n${$('Build Research Bundle').first().json.research_text}` }}",
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"icp_match\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"Yes\",\n        \"No\"\n      ]\n    },\n    \"company_tier\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"Tier 1\",\n        \"Tier 2\",\n        \"Tier 3\",\n        \"Not a fit\"\n      ]\n    },\n    \"fit_score\": {\n      \"type\": \"integer\",\n      \"minimum\": 0,\n      \"maximum\": 100\n    },\n    \"confidence\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"High\",\n        \"Medium\",\n        \"Low\"\n      ]\n    },\n    \"matched_criteria\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"disqualifiers\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"missing_data\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"evidence\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"claim\": {\n            \"type\": \"string\"\n          },\n          \"source_id\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"claim\",\n          \"source_id\"\n        ]\n      }\n    },\n    \"rationale\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"icp_match\",\n    \"company_tier\",\n    \"fit_score\",\n    \"confidence\",\n    \"matched_criteria\",\n    \"disqualifiers\",\n    \"missing_data\",\n    \"evidence\",\n    \"rationale\"\n  ]\n}",
+        "options": {
+          "systemPromptTemplate": "You are a B2B qualification analyst. Decide whether one account fits the seller's ideal customer profile, using only the research supplied in the user message.\n\nRules:\n1. Judge every ICP criterion against the research. A criterion with no supporting evidence counts as unmet and goes in missing_data. Never fill gaps from general knowledge about the company.\n2. Every item in evidence must cite a source ID from the research, such as S3. Do not cite sources that are not listed.\n3. fit_score runs from 0 to 100 and reflects how many ICP criteria are met with evidence, weighted by how central each criterion is to the ICP definition.\n4. company_tier: apply the tier definitions when provided. Otherwise use score bands: Tier 1 at 80 and above, Tier 2 at 60 to 79, Tier 3 at 40 to 59, Not a fit below 40.\n5. icp_match is Yes only when fit_score meets or exceeds the fit threshold and there are no hard disqualifiers. Otherwise it is No.\n6. confidence is Low when fewer than three sources were retrieved or when key criteria are in missing_data.\n7. rationale: two to four plain sentences. No em dashes."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1,
+      "position": [
+        1000,
+        0
+      ],
+      "id": "9d360f04-b767-423b-8389-27f7f250a55e",
+      "name": "Claude Fit Check"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-5-5",
+          "cachedResultName": "Claude Sonnet 5.5"
+        },
+        "options": {
+          "maxTokensToSample": 2048,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        1000,
+        220
+      ],
+      "id": "25facaf6-e2e3-4f68-892f-f2f16032f200",
+      "name": "Claude Model: Fit Check"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c6ada102-5f20-4789-b9be-35f3dda5f966",
+              "leftValue": "={{ $json.output.icp_match }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "Yes"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1220,
+        0
+      ],
+      "id": "c725f0da-e9c9-4f1a-b541-9fb107035006",
+      "name": "ICP Match?"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        200
+      ],
+      "id": "9d74cf69-74a7-4f72-bbd7-2be82bf506fb",
+      "name": "Not ICP: No Action"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Seller & ICP Config').first().json.journey_api_url_template.replace('{domain}', encodeURIComponent($('Normalize Input').first().json.domain)) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        0
+      ],
+      "id": "183d917b-8b29-4f6c-a80f-f7ca5c236f52",
+      "name": "Get Account Journey",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "journey",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1660,
+        0
+      ],
+      "id": "c1ee7268-7de6-4743-addf-8cfcd05c071a",
+      "name": "Aggregate Journey"
+    },
+    {
+      "parameters": {
+        "text": "={{ `SELLER\\n${$('Seller & ICP Config').first().json.seller_company}: ${$('Seller & ICP Config').first().json.seller_offering}\\n\\nACCOUNT\\n${$('Normalize Input').first().json.company_name} (${$('Normalize Input').first().json.domain})\\n\\nFIT CHECK\\n${JSON.stringify($('Claude Fit Check').first().json.output)}\\n\\nWEBSITE JOURNEY (intent provider)\\n${JSON.stringify($('Aggregate Journey').first().json.journey ?? []).slice(0, 15000)}\\n\\nWEB RESEARCH\\n${$('Build Research Bundle').first().json.research_text}` }}",
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"account_summary\": {\n      \"type\": \"string\"\n    },\n    \"journey_description\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"journey_stage\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"Marketing Nurture\",\n        \"Sales Ready\"\n      ]\n    },\n    \"product_interest\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"in_market\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"Yes\",\n        \"No\"\n      ]\n    },\n    \"why_now\": {\n      \"type\": \"string\"\n    },\n    \"signals_identified\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"signal\": {\n            \"type\": \"string\"\n          },\n          \"date\": {\n            \"type\": \"string\"\n          },\n          \"source_id\": {\n            \"type\": \"string\"\n          }\n        },\n        \"required\": [\n          \"signal\",\n          \"date\",\n          \"source_id\"\n        ]\n      }\n    },\n    \"value_statements\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"prospecting_questions\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"cited_source_ids\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  },\n  \"required\": [\n    \"account_summary\",\n    \"journey_description\",\n    \"journey_stage\",\n    \"product_interest\",\n    \"in_market\",\n    \"why_now\",\n    \"signals_identified\",\n    \"value_statements\",\n    \"prospecting_questions\",\n    \"cited_source_ids\"\n  ]\n}",
+        "options": {
+          "systemPromptTemplate": "You compile account research for a B2B sales team. Inputs: the seller, the fit check result, the website visit journey from the intent provider, and web research with source IDs.\n\nProduce:\n1. account_summary: three sentences on what the company does, who it sells to, and its scale. Facts from research only.\n2. journey_description: three to five bullets on the most significant website behaviors, in plain sentences. If the journey data is empty or an error, return one bullet saying journey data was unavailable.\n3. journey_stage: Sales Ready when the journey shows decision activity such as repeated pricing page visits, demo or contact form attempts, competitor or comparison pages, or integration and security pages. Otherwise Marketing Nurture. With no journey data, use Marketing Nurture.\n4. product_interest: three to five short labels ordered by engagement strength, taken from the pages visited.\n5. in_market: Yes only when journey_stage is Sales Ready or a dated research signal from the last 90 days shows active buying motion relevant to the seller. Otherwise No.\n6. why_now: two sentences tying the strongest dated signal to the seller's offering. If no signal exists, say so plainly.\n7. signals_identified: each with the date as written in the source and its source ID. Omit undated claims.\n8. value_statements: two or three statements linking a researched fact about the account to the seller's offering.\n9. prospecting_questions: exactly three open questions a seller could ask, each grounded in a cited fact.\n10. cited_source_ids: every source ID you relied on.\n\nNever invent facts, numbers, names or dates. No em dashes. No filler phrases."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1,
+      "position": [
+        1880,
+        0
+      ],
+      "id": "8f4c3df4-e751-4429-bd77-e3132bbec1f4",
+      "name": "Claude Research Compiler"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-5-5",
+          "cachedResultName": "Claude Sonnet 5.5"
+        },
+        "options": {
+          "maxTokensToSample": 4096,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        1880,
+        220
+      ],
+      "id": "fe0d494f-cc5a-49a1-8d57-7146f52d12b8",
+      "name": "Claude Model: Research Compiler"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1eea003a-a7cb-41d9-b997-eb90e5958175",
+              "leftValue": "={{ $json.output.journey_stage }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              },
+              "rightValue": "Sales Ready"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2100,
+        0
+      ],
+      "id": "e6beebe1-22b7-4816-8149-cc2fa574ca2e",
+      "name": "Sales Ready?"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2320,
+        200
+      ],
+      "id": "75c79a77-2cdf-442e-a527-ef1f9c0d3fc3",
+      "name": "Nurture: No Action"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "637356ad-98ee-4076-b15c-50d8b3b97c67",
+              "leftValue": "={{ $('Account State').first().json.is_new }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2320,
+        0
+      ],
+      "id": "baf1c8de-ea06-406c-8485-3241c57c7496",
+      "name": "New Account?"
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Seller & ICP Config').first().json.slack_channel_id }}"
+        },
+        "text": "={{ `🔔 New Sales Ready Allbound Alert\\n\\n*Account:* ${$('Normalize Input').first().json.company_name} (${$('Normalize Input').first().json.domain})\\n*ICP Fit:* ${$('Claude Fit Check').first().json.output.icp_match} | ${$('Claude Fit Check').first().json.output.company_tier} | Score ${$('Claude Fit Check').first().json.output.fit_score} | Confidence ${$('Claude Fit Check').first().json.output.confidence}\\n*In Market:* ${$('Claude Research Compiler').first().json.output.in_market}\\n\\n*Summary:* ${$('Claude Research Compiler').first().json.output.account_summary}\\n\\n*Why Now:* ${$('Claude Research Compiler').first().json.output.why_now}\\n\\n*Product Interest:* ${$('Claude Research Compiler').first().json.output.product_interest.join(', ')}\\n\\n*Signals:*\\n${$('Claude Research Compiler').first().json.output.signals_identified.map(s => `• ${s.signal} (${s.date}, ${s.source_id})`).join('\\n') || '• None found'}\\n\\n*Account Journey:*\\n${$('Claude Research Compiler').first().json.output.journey_description.map(b => `• ${b}`).join('\\n')}\\n\\n*Icebreakers:*\\n${$('Claude Research Compiler').first().json.output.prospecting_questions.map((q, i) => `${i + 1}. ${q}`).join('\\n')}\\n\\n*Sources:*\\n${$('Build Research Bundle').first().json.sources.filter(s => $('Claude Research Compiler').first().json.output.cited_source_ids.includes(s.id)).slice(0, 5).map(s => `${s.id}: ${s.url}`).join('\\n') || 'None cited'}` }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        2540,
+        -200
+      ],
+      "id": "4acc1578-7e5b-4332-9466-9d6e633d2ff4",
+      "name": "Slack: Sales Ready Alert",
+      "webhookId": "a5f9352a-f13d-45a4-a197-7dda7d91d67c"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "company",
+        "name": "={{ $('Normalize Input').first().json.company_name }}",
+        "additionalFields": {
+          "customPropertiesUi": {
+            "customPropertiesValues": [
+              {
+                "property": "allbound_journey_stage",
+                "value": "={{ $('Claude Research Compiler').first().json.output.journey_stage }}"
+              },
+              {
+                "property": "allbound_in_market",
+                "value": "={{ $('Claude Research Compiler').first().json.output.in_market }}"
+              },
+              {
+                "property": "allbound_first_intent_date",
+                "value": "={{ $now.toUTC().startOf('day').toMillis() }}"
+              },
+              {
+                "property": "allbound_icp_tier",
+                "value": "={{ $('Claude Fit Check').first().json.output.company_tier }}"
+              },
+              {
+                "property": "allbound_icp_match",
+                "value": "={{ $('Claude Fit Check').first().json.output.icp_match }}"
+              },
+              {
+                "property": "allbound_research_notes",
+                "value": "={{ `Account Summary:\\n${$('Claude Research Compiler').first().json.output.account_summary}\\n\\nWhy Now:\\n${$('Claude Research Compiler').first().json.output.why_now}\\n\\nFit Rationale (score ${$('Claude Fit Check').first().json.output.fit_score}):\\n${$('Claude Fit Check').first().json.output.rationale}\\n\\nJourney Summary:\\n${$('Claude Research Compiler').first().json.output.journey_description.join('\\n')}\\n\\nSources:\\n${$('Build Research Bundle').first().json.sources.filter(s => $('Claude Research Compiler').first().json.output.cited_source_ids.includes(s.id)).slice(0, 5).map(s => `${s.id}: ${s.url}`).join('\\n') || 'None cited'}` }}"
+              }
+            ]
+          },
+          "websiteUrl": "={{ $('Normalize Input').first().json.domain }}"
+        }
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.1,
+      "position": [
+        2760,
+        -200
+      ],
+      "id": "b29ab04c-64ca-4ef8-a068-0ef4714f5640",
+      "name": "Create Company in HubSpot"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cfg = $('Seller & ICP Config').first().json;\nconst domain = $('Normalize Input').first().json.domain;\nconst split = (s) => String(s || '').split(',').map((x) => x.trim()).filter(Boolean);\nconst qs = [`q_organization_domains_list%5B%5D=${encodeURIComponent(domain)}`];\nfor (const t of split(cfg.persona_titles)) qs.push(`person_titles%5B%5D=${encodeURIComponent(t)}`);\nfor (const s of split(cfg.persona_seniorities)) qs.push(`person_seniorities%5B%5D=${encodeURIComponent(s)}`);\nqs.push('include_similar_titles=true', 'page=1', `per_page=${Number(cfg.max_contacts) || 10}`);\nreturn [{ json: { apollo_url: `https://api.apollo.io/api/v1/mixed_people/api_search?${qs.join('&')}` } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2980,
+        -200
+      ],
+      "id": "583d8497-5c56-408d-88fe-4df66f1ca032",
+      "name": "Build Apollo Query"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.apollo_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3200,
+        -200
+      ],
+      "id": "a2dbb095-0d02-443b-b980-d777c842d0ae",
+      "name": "Apollo: Find Buying Committee"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "people",
+        "include": "noOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        3420,
+        -200
+      ],
+      "id": "882f4bf6-3d9d-4f0b-af1f-d86175303ffb",
+      "name": "Split Out People"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apollo.io/api/v1/people/match",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "id",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "reveal_personal_emails",
+              "value": "false"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3640,
+        -200
+      ],
+      "id": "e7e58eca-9a17-4932-afa5-72032902638e",
+      "name": "Apollo: Enrich Person",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8a1ffab1-12ec-42ab-9bad-5c08889944e7",
+              "leftValue": "={{ $json.person?.email_status ?? '' }}",
+              "rightValue": "verified",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "87be0524-ab0a-47d7-867f-cf00c0f51b36",
+              "leftValue": "={{ $json.person?.email ?? '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        3860,
+        -200
+      ],
+      "id": "b850c8c7-a957-419f-a4d6-0158e7b9db9e",
+      "name": "Verified Email?"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "07e59f89-7730-4f02-a902-dabe7af752e0",
+              "name": "hs_contact_fname",
+              "value": "={{ $json.person.first_name ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "96e4ea71-7690-4477-94f2-939057d84bb6",
+              "name": "hs_contact_lname",
+              "value": "={{ $json.person.last_name ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "e2ed7a21-d533-403a-8b0d-6c5bdbb13916",
+              "name": "hs_contact_email",
+              "value": "={{ $json.person.email ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "2efe8d30-228b-46c6-a97f-88071367335c",
+              "name": "hs_contact_title",
+              "value": "={{ $json.person.title ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "28114325-1c4e-4f2b-94ce-de3b4a5ff040",
+              "name": "hs_contact_company_name",
+              "value": "={{ $json.person.organization?.name ?? $('Normalize Input').first().json.company_name }}",
+              "type": "string"
+            },
+            {
+              "id": "419ba9de-46fc-4249-b0eb-dc2dfd002a82",
+              "name": "hs_contact_city",
+              "value": "={{ $json.person.city ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "212417f5-3147-473a-86c0-54d9815a73f5",
+              "name": "hs_contact_country",
+              "value": "={{ $json.person.country ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "ae830146-e226-4685-a280-7e55de1527b5",
+              "name": "hs_contact_linkedin",
+              "value": "={{ $json.person.linkedin_url ?? '' }}",
+              "type": "string"
+            },
+            {
+              "id": "8c60e5e9-128d-4892-9d83-8a22d2bd6556",
+              "name": "hs_contact_headline",
+              "value": "={{ $json.person.headline ?? '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4080,
+        -200
+      ],
+      "id": "2f28631f-61c4-48e4-b699-83976376077f",
+      "name": "Contact Fields"
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "email": "={{ $json.hs_contact_email }}",
+        "additionalFields": {
+          "city": "={{ $json.hs_contact_city }}",
+          "companyName": "={{ $json.hs_contact_company_name }}",
+          "country": "={{ $json.hs_contact_country }}",
+          "firstName": "={{ $json.hs_contact_fname }}",
+          "jobTitle": "={{ $json.hs_contact_title }}",
+          "lastName": "={{ $json.hs_contact_lname }}"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2.1,
+      "position": [
+        4300,
+        -200
+      ],
+      "id": "f18a8985-244e-49ba-885e-ebb54ec2faf6",
+      "name": "Upsert Contact in HubSpot"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.hubapi.com/crm/v4/objects/contacts/{{ $json.vid }}/associations/default/companies/{{ $('Create Company in HubSpot').first().json.companyId }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4520,
+        -200
+      ],
+      "id": "868d840a-8f94-4050-88f8-68ee22b733b9",
+      "name": "Associate Contact to Company",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "text": "={{ `SELLER\\n${$('Seller & ICP Config').first().json.seller_company}: ${$('Seller & ICP Config').first().json.seller_offering}\\n\\nPROSPECT\\nName: ${$('Contact Fields').item.json.hs_contact_fname} ${$('Contact Fields').item.json.hs_contact_lname}\\nTitle: ${$('Contact Fields').item.json.hs_contact_title}\\nHeadline: ${$('Contact Fields').item.json.hs_contact_headline || 'Not provided'}\\nCompany: ${$('Normalize Input').first().json.company_name}\\n\\nACCOUNT RESEARCH\\nSummary: ${$('Claude Research Compiler').first().json.output.account_summary}\\nWhy now: ${$('Claude Research Compiler').first().json.output.why_now}\\nValue statements:\\n${$('Claude Research Compiler').first().json.output.value_statements.join('\\n')}\\nSignals:\\n${$('Claude Research Compiler').first().json.output.signals_identified.map(s => `${s.signal} (${s.date}, ${s.source_id})`).join('\\n')}\\nProduct interest: ${$('Claude Research Compiler').first().json.output.product_interest.join(', ')}\\n\\nSOURCES\\n${$('Build Research Bundle').first().json.sources.map(s => `${s.id}: ${s.title} ${s.url}`).join('\\n')}` }}",
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"email_1\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"subject\": {\n          \"type\": \"string\"\n        },\n        \"body\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"body\"\n      ]\n    },\n    \"email_2\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"subject\": {\n          \"type\": \"string\"\n        },\n        \"body\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"body\"\n      ]\n    },\n    \"email_3\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"subject\": {\n          \"type\": \"string\"\n        },\n        \"body\": {\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"subject\",\n        \"body\"\n      ]\n    },\n    \"linkedin_note\": {\n      \"type\": \"string\"\n    },\n    \"personalization_sources\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    }\n  },\n  \"required\": [\n    \"email_1\",\n    \"email_2\",\n    \"email_3\",\n    \"linkedin_note\",\n    \"personalization_sources\"\n  ]\n}",
+        "options": {
+          "systemPromptTemplate": "You write outbound sequences for a B2B seller. Write a three-email sequence and one LinkedIn connection note for a single prospect.\n\nRules:\n1. Email 1 opens with a specific, cited fact about the account or the prospect's role, connects it to one problem the seller solves, and ends with one low-friction question. Under 110 words.\n2. Email 2 is sent three days later. It adds one new piece of evidence or a value statement and does not repeat email 1. Under 90 words.\n3. Email 3 is sent seven days after email 2. It is a short close-the-loop note. Under 60 words.\n4. linkedin_note is under 280 characters and references one researched fact.\n5. Subjects are under six words, lowercase, with no clickbait.\n6. Use only facts from the research and prospect data. If a fact is not provided, do not use it. Never reference the prospect's website visits or browsing behavior directly.\n7. personalization_sources lists the source IDs or prospect fields each email relied on.\n8. Style: plain sentences, no em dashes, no rhetorical openers, no exclamation marks, no lists of three adjectives. Avoid these words: delve, leverage, seamless, robust, elevate, unlock, game-changing, revolutionary, transformative, cutting-edge.\n9. End each body without a signature or sign-off line. The sending tool adds it."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1,
+      "position": [
+        4740,
+        -200
+      ],
+      "id": "2c4a1144-d333-49ad-ba05-9a5cf9447a3c",
+      "name": "Claude Sequence Writer"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-5-5",
+          "cachedResultName": "Claude Sonnet 5.5"
+        },
+        "options": {
+          "maxTokensToSample": 3072,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        4740,
+        20
+      ],
+      "id": "d8d84866-3ec6-4b19-8a6c-42eb40ea397b",
+      "name": "Claude Model: Sequence Writer"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/notes",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { hs_timestamp: $now.toISO(), hs_note_body: [`<b>Allbound sequence draft</b>`,`<b>Email 1: ${$('Claude Sequence Writer').item.json.output.email_1.subject}</b><br>${$('Claude Sequence Writer').item.json.output.email_1.body.replace(/\\n/g, '<br>')}`,`<b>Email 2: ${$('Claude Sequence Writer').item.json.output.email_2.subject}</b><br>${$('Claude Sequence Writer').item.json.output.email_2.body.replace(/\\n/g, '<br>')}`,`<b>Email 3: ${$('Claude Sequence Writer').item.json.output.email_3.subject}</b><br>${$('Claude Sequence Writer').item.json.output.email_3.body.replace(/\\n/g, '<br>')}`,`<b>LinkedIn note</b><br>${$('Claude Sequence Writer').item.json.output.linkedin_note}`].join('<br><br>') } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4960,
+        -200
+      ],
+      "id": "a013eb3e-b1cd-447b-879e-0152a8741c46",
+      "name": "Log Sequence as HubSpot Note",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.hubapi.com/crm/v4/objects/notes/{{ $json.id }}/associations/default/contacts/{{ $('Upsert Contact in HubSpot').item.json.vid }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        5180,
+        -200
+      ],
+      "id": "6354aeb1-0b87-4138-9798-30c8f5e10483",
+      "name": "Associate Note to Contact",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Seller & ICP Config').first().json.slack_channel_id }}"
+        },
+        "text": "={{ `👥 ${$('Contact Fields').item.json.hs_contact_fname} ${$('Contact Fields').item.json.hs_contact_lname} | ${$('Contact Fields').item.json.hs_contact_title} | ${$('Contact Fields').item.json.hs_contact_company_name}\\n${$('Contact Fields').item.json.hs_contact_email} | ${$('Contact Fields').item.json.hs_contact_linkedin || 'No LinkedIn URL'}\\n\\n*Email 1: ${$('Claude Sequence Writer').item.json.output.email_1.subject}*\\n${$('Claude Sequence Writer').item.json.output.email_1.body}\\n\\n*Email 2: ${$('Claude Sequence Writer').item.json.output.email_2.subject}*\\n${$('Claude Sequence Writer').item.json.output.email_2.body}\\n\\n*Email 3: ${$('Claude Sequence Writer').item.json.output.email_3.subject}*\\n${$('Claude Sequence Writer').item.json.output.email_3.body}\\n\\n*LinkedIn:* ${$('Claude Sequence Writer').item.json.output.linkedin_note}` }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        5400,
+        -200
+      ],
+      "id": "243a32a4-f13f-40f0-b617-2fd6570fba80",
+      "name": "Slack: Contact and Sequence",
+      "webhookId": "56c80318-1a52-4dd8-b1f1-cd2d9461ccd6"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.hubapi.com/crm/v3/objects/companies/{{ $('Account State').first().json.hs_company_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "properties",
+              "value": "name,hubspot_owner_id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2540,
+        200
+      ],
+      "id": "5bdb88ee-43dc-4d1c-bb40-2c173da754c0",
+      "name": "Get Company Owner",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.hubapi.com/crm/v3/objects/companies/{{ $('Account State').first().json.hs_company_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { allbound_journey_stage: $('Claude Research Compiler').first().json.output.journey_stage, allbound_in_market: $('Claude Research Compiler').first().json.output.in_market, allbound_icp_tier: $('Claude Fit Check').first().json.output.company_tier, allbound_icp_match: $('Claude Fit Check').first().json.output.icp_match, allbound_research_notes: `Account Summary:\\n${$('Claude Research Compiler').first().json.output.account_summary}\\n\\nWhy Now:\\n${$('Claude Research Compiler').first().json.output.why_now}\\n\\nFit Rationale (score ${$('Claude Fit Check').first().json.output.fit_score}):\\n${$('Claude Fit Check').first().json.output.rationale}\\n\\nJourney Summary:\\n${$('Claude Research Compiler').first().json.output.journey_description.join('\\n')}` } }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2760,
+        200
+      ],
+      "id": "de3e16fe-2645-4fb3-b97f-9e3e2d2b057a",
+      "name": "Update Company Research",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.hubapi.com/crm/v4/objects/companies/{{ $('Account State').first().json.hs_company_id }}/associations/tasks",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "500"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2980,
+        200
+      ],
+      "id": "4f91fcae-ff2e-45d7-acca-923d87cf7d79",
+      "name": "Get Company Tasks"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ids = ($json.results || []).map((r) => String(r.toObjectId)).filter(Boolean).slice(0, 100);\nreturn [{ json: { task_ids: ids, has_tasks: ids.length > 0 } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3200,
+        200
+      ],
+      "id": "524e6496-bdef-48fb-a308-626133a2fa1e",
+      "name": "Collect Task IDs"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "901f4201-24dd-4ddf-b582-2ed067e539b5",
+              "leftValue": "={{ $json.has_tasks }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3420,
+        200
+      ],
+      "id": "0a5099de-3ba7-47fa-b5ba-5c12c325d4e9",
+      "name": "Has Tasks?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/tasks/batch/read",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: ['hs_task_subject', 'hs_task_status'], inputs: $json.task_ids.map(id => ({ id })) }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3640,
+        100
+      ],
+      "id": "65ae2ce5-c203-4551-ab67-4456513b60e3",
+      "name": "Read Tasks"
+    },
+    {
+      "parameters": {
+        "jsCode": "const tasks = $json.results || [];\nconst active = tasks.filter((t) => {\n  const p = t.properties || {};\n  return String(p.hs_task_subject || '').includes('BOFU') && p.hs_task_status !== 'COMPLETED';\n});\nreturn [{ json: { has_active_bofu: active.length > 0, active_bofu_count: active.length } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3860,
+        200
+      ],
+      "id": "49bc99e7-597a-45ed-b347-4da0056c3885",
+      "name": "Evaluate BOFU Tasks"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d718fd68-c4bb-4db5-8248-fc83777b895b",
+              "leftValue": "={{ $json.has_active_bofu }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              },
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        4080,
+        200
+      ],
+      "id": "098afb6b-a4ee-4802-8129-d3cc12287d7e",
+      "name": "No Active BOFU Task?"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        4300,
+        400
+      ],
+      "id": "cb3edc79-0213-4636-8ffa-ebd98343a3bb",
+      "name": "Active BOFU Exists: No Action"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/tasks",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: Object.assign({ hs_timestamp: $now.plus({ days: 1 }).toUTC().toISO(), hs_task_subject: `BOFU Outreach: ${$('Normalize Input').first().json.company_name}`, hs_task_body: [`Why now: ${$('Claude Research Compiler').first().json.output.why_now}`, `Value pointers:\\n${$('Claude Research Compiler').first().json.output.value_statements.join('\\n')}`, `Openers:\\n${$('Claude Research Compiler').first().json.output.prospecting_questions.join('\\n')}`, `Journey:\\n${$('Claude Research Compiler').first().json.output.journey_description.join('\\n')}`].join('\\n\\n'), hs_task_status: 'NOT_STARTED', hs_task_priority: 'HIGH', hs_task_type: 'TODO' }, $('Get Company Owner').first().json.properties?.hubspot_owner_id ? { hubspot_owner_id: $('Get Company Owner').first().json.properties?.hubspot_owner_id } : {}) }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4300,
+        200
+      ],
+      "id": "c5213626-83fc-45a9-ac61-0be381dd0dad",
+      "name": "Create BOFU Task"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.hubapi.com/crm/v4/objects/tasks/{{ $json.id }}/associations/default/companies/{{ $('Account State').first().json.hs_company_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4520,
+        200
+      ],
+      "id": "a1c91493-bcb3-4c7d-abdc-ad6a4a945d06",
+      "name": "Associate Task to Company",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://api.hubapi.com/crm/v3/owners/{{ $('Get Company Owner').first().json.properties?.hubspot_owner_id || 'unassigned' }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "hubspotOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        4740,
+        200
+      ],
+      "id": "df0750c8-c373-4c9d-918c-8d62d375aa71",
+      "name": "Get Owner Name",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Seller & ICP Config').first().json.slack_channel_id }}"
+        },
+        "text": "={{ `🔔 BOFU task created for ${$('Normalize Input').first().json.company_name} (${$('Normalize Input').first().json.domain})\\n*Owner:* ${$('Get Owner Name').first().json.firstName ? `${$('Get Owner Name').first().json.firstName} ${$('Get Owner Name').first().json.lastName || ''}`.trim() : 'Unassigned in HubSpot'}\\n*ICP Fit:* ${$('Claude Fit Check').first().json.output.company_tier} | Score ${$('Claude Fit Check').first().json.output.fit_score}\\n\\n*Why Now:* ${$('Claude Research Compiler').first().json.output.why_now}\\n\\n*Research Pointers:*\\n${$('Claude Research Compiler').first().json.output.value_statements.map(v => `• ${v}`).join('\\n')}\\n\\n*Openers:*\\n${$('Claude Research Compiler').first().json.output.prospecting_questions.map((q, i) => `${i + 1}. ${q}`).join('\\n')}\\n\\n*Sources:*\\n${$('Build Research Bundle').first().json.sources.filter(s => $('Claude Research Compiler').first().json.output.cited_source_ids.includes(s.id)).slice(0, 5).map(s => `${s.id}: ${s.url}`).join('\\n') || 'None cited'}` }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        4960,
+        200
+      ],
+      "id": "b3d56f47-31d0-4837-9ccc-1add466ae634",
+      "name": "Slack: BOFU Task Created",
+      "webhookId": "a38a6654-5482-4fa4-9a0e-918ffaef6c24"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Seller & ICP Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seller & ICP Config": {
+      "main": [
+        [
+          {
+            "node": "Config Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search HubSpot by Domain": {
+      "main": [
+        [
+          {
+            "node": "Account State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Account State": {
+      "main": [
+        [
+          {
+            "node": "Exa: Company Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exa: Company Profile": {
+      "main": [
+        [
+          {
+            "node": "Exa: Recent News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exa: Recent News": {
+      "main": [
+        [
+          {
+            "node": "Exa: Company Website",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exa: Company Website": {
+      "main": [
+        [
+          {
+            "node": "Build Research Bundle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Research Bundle": {
+      "main": [
+        [
+          {
+            "node": "Claude Fit Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Fit Check": {
+      "main": [
+        [
+          {
+            "node": "ICP Match?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Account Journey": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Journey",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Journey": {
+      "main": [
+        [
+          {
+            "node": "Claude Research Compiler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Research Compiler": {
+      "main": [
+        [
+          {
+            "node": "Sales Ready?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack: Sales Ready Alert": {
+      "main": [
+        [
+          {
+            "node": "Create Company in HubSpot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Company in HubSpot": {
+      "main": [
+        [
+          {
+            "node": "Build Apollo Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Apollo Query": {
+      "main": [
+        [
+          {
+            "node": "Apollo: Find Buying Committee",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apollo: Find Buying Committee": {
+      "main": [
+        [
+          {
+            "node": "Split Out People",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out People": {
+      "main": [
+        [
+          {
+            "node": "Apollo: Enrich Person",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apollo: Enrich Person": {
+      "main": [
+        [
+          {
+            "node": "Verified Email?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verified Email?": {
+      "main": [
+        [
+          {
+            "node": "Contact Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contact Fields": {
+      "main": [
+        [
+          {
+            "node": "Upsert Contact in HubSpot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Contact in HubSpot": {
+      "main": [
+        [
+          {
+            "node": "Associate Contact to Company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Associate Contact to Company": {
+      "main": [
+        [
+          {
+            "node": "Claude Sequence Writer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Sequence Writer": {
+      "main": [
+        [
+          {
+            "node": "Log Sequence as HubSpot Note",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Sequence as HubSpot Note": {
+      "main": [
+        [
+          {
+            "node": "Associate Note to Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Associate Note to Contact": {
+      "main": [
+        [
+          {
+            "node": "Slack: Contact and Sequence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Company Owner": {
+      "main": [
+        [
+          {
+            "node": "Update Company Research",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Company Research": {
+      "main": [
+        [
+          {
+            "node": "Get Company Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Company Tasks": {
+      "main": [
+        [
+          {
+            "node": "Collect Task IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Task IDs": {
+      "main": [
+        [
+          {
+            "node": "Has Tasks?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Tasks": {
+      "main": [
+        [
+          {
+            "node": "Evaluate BOFU Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create BOFU Task": {
+      "main": [
+        [
+          {
+            "node": "Associate Task to Company",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Associate Task to Company": {
+      "main": [
+        [
+          {
+            "node": "Get Owner Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Owner Name": {
+      "main": [
+        [
+          {
+            "node": "Slack: BOFU Task Created",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config Complete?": {
+      "main": [
+        [
+          {
+            "node": "Search HubSpot by Domain",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop: ICP Config Missing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ICP Match?": {
+      "main": [
+        [
+          {
+            "node": "Get Account Journey",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not ICP: No Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sales Ready?": {
+      "main": [
+        [
+          {
+            "node": "New Account?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Nurture: No Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New Account?": {
+      "main": [
+        [
+          {
+            "node": "Slack: Sales Ready Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Company Owner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Tasks?": {
+      "main": [
+        [
+          {
+            "node": "Read Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Evaluate BOFU Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Active BOFU Task?": {
+      "main": [
+        [
+          {
+            "node": "Create BOFU Task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Active BOFU Exists: No Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate BOFU Tasks": {
+      "main": [
+        [
+          {
+            "node": "No Active BOFU Task?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Model: Fit Check": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Claude Fit Check",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Model: Research Compiler": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Claude Research Compiler",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude Model: Sequence Writer": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Claude Sequence Writer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
