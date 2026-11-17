@@ -1,7 +1,3 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><title>README preview</title>
-<style>body{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;max-width:980px;margin:32px auto;padding:0 20px;line-height:1.55;color:#1f2328}
-img{max-width:100%;border:1px solid #d0d7de;border-radius:6px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #d0d7de;padding:6px 10px;vertical-align:top}
-th{background:#f6f8fa}code{background:#f6f8fa;padding:2px 4px;border-radius:4px}pre{background:#f6f8fa;padding:12px;overflow:auto;border-radius:6px}h2{border-bottom:1px solid #d0d7de;padding-bottom:4px}</style>
 </head><body><h1>GTM Engineering Portfolio</h1>
 <p>I'm Sashank Koundinya, a GTM engineer with 5+ years across SDR, AE, CSM, marketing and content. I build outbound motions from zero along with the data layer behind them. This repository holds three systems I designed and built to move B2B teams from a target account to a booked conversation.</p>
 <table>
